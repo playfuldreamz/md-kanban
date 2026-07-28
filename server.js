@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * kanban-md server — Express + WebSocket + chokidar + pi changelog test v4.
+ * kanban-md server — Express + WebSocket + chokidar + pi changelog test v5.
  *
  * Reads a TODO.md file, serves a Kanban board API, watches for changes,
  * and pushes live updates to connected browsers via WebSocket.
