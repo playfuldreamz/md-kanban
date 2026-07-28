@@ -1,0 +1,38 @@
+{
+  "name": "kanban-md",
+  "version": "0.1.0",
+  "description": "Interactive Kanban board for your TODO.md — columns are ## sections, cards are - [ ] items.",
+  "main": "server.js",
+  "bin": {
+    "kanban-md": "./server.js"
+  },
+  "files": [
+    "server.js",
+    "lib/parser.js",
+    "lib/writer.js",
+    "client/dist/"
+  ],
+  "scripts": {
+    "start": "node server.js",
+    "test": "node lib/parser.test.js && node lib/writer.test.js",
+    "test:server": "node lib/server.test.js",
+    "build": "cd client && npm run build",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "kanban",
+    "todo",
+    "markdown",
+    "task-board",
+    "cli"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "express": "^5.1.0",
+    "ws": "^8.18.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
