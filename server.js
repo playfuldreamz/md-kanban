@@ -54,9 +54,32 @@ const absFilePath = path.resolve(filePath);
 
 let boardState = { title: '', columns: [] };
 
+const FORMAT_GUIDE = `<!--
+  FORMAT — This file is a live Kanban board (npx md-kanban) powered by plain Markdown.
+
+  Columns  =  ## Column Name
+  Cards    =  - [ ] **Title** — Description
+             - [x] **Title** — Description   (x = done)
+
+  RULES FOR AI AGENTS:
+  • Every task MUST start with "- [ ]" or "- [x]" at the beginning of the line
+  • Bold the title with **double asterisks**
+  • Use an em dash (—) before any description or details
+  • Only H2 (##) sections become columns — H3+ are ignored
+  • HTML comments like this block are invisible to the board
+-->`;
+
 function readAndParse() {
   if (!fs.existsSync(absFilePath)) {
-    boardState = { title: '', columns: [] };
+    // Auto-create a starter TODO.md with format guide
+    const starter = `${FORMAT_GUIDE}
+
+# TODO
+
+## 📋 Tasks
+- [ ] **Try me** — Click the checkbox, drag cards between columns, or edit this file directly.\n`;
+    fs.writeFileSync(absFilePath, starter, 'utf-8');
+    boardState = parseMarkdown(starter);
     return;
   }
   const raw = fs.readFileSync(absFilePath, 'utf-8');
