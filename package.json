@@ -1,10 +1,10 @@
 {
-  "name": "kanban-md",
+  "name": "md-kanban",
   "version": "0.1.0",
   "description": "Interactive Kanban board for your TODO.md — columns are ## sections, cards are - [ ] items.",
   "main": "server.js",
   "bin": {
-    "kanban-md": "./server.js"
+    "md-kanban": "./server.js"
   },
   "files": [
     "server.js",
