@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * kanban-md server — Express + WebSocket + chokidar + pi changelog test v9.
+ * md-kanban server — Express + WebSocket + chokidar.
  *
  * Reads a TODO.md file, serves a Kanban board API, watches for changes,
  * and pushes live updates to connected browsers via WebSocket.
@@ -34,9 +34,9 @@ for (let i = 0; i < args.length; i++) {
     openBrowser = false;
   } else if (args[i] === '--help' || args[i] === '-h') {
     console.log(`
-  kanban-md — Interactive Kanban board for your TODO.md
+  md-kanban — Interactive Kanban board for your TODO.md
 
-  Usage: npx kanban-md [options]
+  Usage: npx md-kanban [options]
 
   Options:
     --file <path>   Path to TODO.md (default: ./TODO.md)
@@ -256,7 +256,7 @@ if (fs.existsSync(clientDist)) {
     if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found' });
     res.type('html').send(`<!doctype html>
 <html><body style="font-family:system-ui;padding:2rem">
-  <h1>kanban-md</h1>
+  <h1>md-kanban</h1>
   <p>Client not built yet.</p>
   <pre>cd client && npm run build</pre>
   <p>API: <a href="/api/health">/api/health</a> | <a href="/api/board">/api/board</a></p>
@@ -350,7 +350,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`\n  🏷️  kanban-md`);
+  console.log(`\n  🏷️  md-kanban`);
   console.log(`  📄  ${absFilePath}`);
   console.log(`  🌐  http://localhost:${actualPort}`);
   console.log(`  📊  ${boardState.columns.length} columns, ${boardState.columns.reduce((s, c) => s + c.cards.length, 0)} cards`);
