@@ -82,7 +82,22 @@ function readAndParse() {
     boardState = parseMarkdown(starter);
     return;
   }
-  const raw = fs.readFileSync(absFilePath, 'utf-8');
+  let raw = fs.readFileSync(absFilePath, 'utf-8');
+
+  // If file has content but no preamble, prepend the format guide
+  if (raw.trim().length > 0 && !raw.includes('<!--') && !raw.startsWith('<!--')) {
+    raw = `${FORMAT_GUIDE}
+
+${raw}`;
+    // Only write it back if we're not going to cause chokidar loops
+    // (chokidar has ignoreInitial: true, so this won't trigger a re-read)
+    try {
+      fs.writeFileSync(absFilePath, raw, 'utf-8');
+    } catch {
+      // File might be locked — that's fine, guide will be added on next write
+    }
+  }
+
   boardState = parseMarkdown(raw);
 }
 
