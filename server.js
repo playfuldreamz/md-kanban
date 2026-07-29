@@ -88,6 +88,9 @@ wss.on('connection', (ws) => {
   ws.on('error', () => {});
 });
 
+// Suppress EADDRINUSE on the WS server — handled by the HTTP fallback loop
+wss.on('error', () => {});
+
 // ─── Routes ──────────────────────────────────────────────────────────────────
 
 registerRoutes(app, {

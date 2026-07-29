@@ -46,17 +46,29 @@ function extractCwd(command: string, projectCwd: string): string {
   return projectCwd;
 }
 
-/** Parse all `-m "message"` commit messages from a bash command. */
+/** Parse all `-m "message"` commit messages from a bash command.
+ *  Handles multiline messages (s flag makes . match \n),
+ *  multiple -m flags (git joins paragraphs with blank lines),
+ *  and unquoted single-line messages as fallback. */
 function parseCommitMessages(command: string): string[] {
   const messages: string[] = [];
-  const re = /-m\s+(["'])(.*?)\1/g;
+  // Quoted messages: -m "..." or -m '...' (s flag = dotall for multiline)
+  const re = /-m\s+(["'])(.*?)\1/gs;
   let match;
   while ((match = re.exec(command)) !== null) {
     messages.push(match[2]);
   }
+  // Unquoted single-line fallback: -m message text
   if (messages.length === 0) {
     const unquoted = command.match(/-m\s+([^;&|]+?)(?=\s*(?:&&|;|\||$))/);
-    if (unquoted) messages.push(unquoted[1].trim());
+    if (unquoted) {
+      let msg = unquoted[1].trim();
+      // Strip surrounding quotes if present (partial quote match)
+      if (/^["']/.test(msg) && /["']$/.test(msg)) {
+        msg = msg.slice(1, -1);
+      }
+      messages.push(msg);
+    }
   }
   return messages;
 }
