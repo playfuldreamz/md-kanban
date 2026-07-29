@@ -373,6 +373,30 @@ app.put('/api/priorities', (req, res) => {
   }
 });
 
+/** DELETE /api/columns/:id — Remove a custom column. Cards move to To Do. */
+app.delete('/api/columns/:id', (req, res) => {
+  try {
+    const col = boardState.columns.find(c => c.id === req.params.id);
+    if (!col) return res.status(404).json({ error: 'Column not found' });
+    // Don't allow deleting mandatory columns
+    const name = col.name.toLowerCase();
+    if (name.includes('to do') || name.includes('progress') || name.includes('done')) {
+      return res.status(400).json({ error: 'Cannot delete a mandatory column' });
+    }
+    // Move cards to To Do
+    const todoCol = boardState.columns.find(c => c.name.toLowerCase().includes('to do') || c.id.includes('to-do'));
+    if (todoCol && col.cards.length > 0) {
+      todoCol.cards.push(...col.cards);
+    }
+    boardState.columns = boardState.columns.filter(c => c.id !== col.id);
+    writeBoard(boardState);
+    broadcast(boardState);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /** GET /api/health — Simple health check. */
 app.get('/api/health', (req, res) => {
   res.json({

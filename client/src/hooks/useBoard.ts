@@ -182,7 +182,7 @@ export function useBoard() {
     [apiBase],
   );
 
-  // Check if board uses non-standard columns (not To Do / In Progress / Done)
+  // Check if board is missing any of the 3 standard columns
   const isStandard = (col: { id: string; name: string }) => {
     const n = col.name.toLowerCase().replace(/^[^\w]*/, '');
     const i = col.id.toLowerCase();
@@ -190,8 +190,11 @@ export function useBoard() {
       i.includes('progress') || n.includes('progress') ||
       i.includes('done') || n.includes('done');
   };
+  const hasTodo = board.columns.some(c => c.id.includes('to-do') || c.name.toLowerCase().includes('to do'));
+  const hasProgress = board.columns.some(c => c.id.includes('progress') || c.name.toLowerCase().includes('progress'));
+  const hasDone = board.columns.some(c => c.id.includes('done') || c.name.toLowerCase().includes('done'));
   const needsConversion = !loading && board.columns.length > 0 &&
-    board.columns.some(c => !isStandard(c));
+    !(hasTodo && hasProgress && hasDone);
 
   const totalCards = board.columns.reduce((sum, c) => sum + c.cards.length, 0);
 
@@ -202,6 +205,15 @@ export function useBoard() {
       const res = await fetch(`${apiBase}/api/board`);
       const data: BoardState = await res.json();
       dispatch({ type: 'BOARD_SYNC', board: data });
+    } catch {
+      // WebSocket sync will reconcile
+    }
+  }, [apiBase]);
+
+  const deleteColumn = useCallback(async (columnId: string) => {
+    try {
+      await fetch(`${apiBase}/api/columns/${columnId}`, { method: 'DELETE' });
+      // WebSocket sync will reconcile
     } catch {
       // WebSocket sync will reconcile
     }
@@ -223,6 +235,7 @@ export function useBoard() {
     addColumn,
     needsConversion,
     convertBoard,
+    deleteColumn,
   };
 }
 

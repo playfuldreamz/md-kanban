@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { Badge } from '@appica/ui-react/badge';
-import { ClipboardCheck, Clock, CircleCheck, LayoutKanban, AlertTriangle, Sparkles } from '@appica/icons-react';
+import { Button } from '@appica/ui-react/button';
+import { ClipboardCheck, Clock, CircleCheck, LayoutKanban, AlertTriangle, Sparkles, Trash } from '@appica/icons-react';
 import type { Column } from '../types';
 import KanbanCard from './KanbanCard';
 import AddCardForm from './AddCardForm';
@@ -42,6 +43,7 @@ interface ColumnViewProps {
   onAdd: (columnId: string, title: string, description: string) => void;
   onEdit: (cardId: string, title: string, description: string) => void;
   onMove: (cardId: string, toColumnId: string, toIndex: number) => void;
+  onDeleteColumn?: (columnId: string) => void;
   dragCardId: string | null;
   dragColumnId: string | null;
   onDragStart: (cardId: string, columnId: string) => void;
@@ -50,7 +52,7 @@ interface ColumnViewProps {
 
 export default function ColumnView({
   column, showCompleted, priorities, onToggle, onDelete, onAdd, onEdit,
-  onMove, dragCardId, dragColumnId, onDragStart, onDragEnd,
+  onMove, onDeleteColumn, dragCardId, dragColumnId, onDragStart, onDragEnd,
 }: ColumnViewProps) {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const cardListRef = useRef<HTMLDivElement>(null);
@@ -59,6 +61,9 @@ export default function ColumnView({
 
   const isDragOver = dragCardId !== null && dragOverIndex !== null;
   const isSource = dragCardId !== null && dragColumnId === column.id;
+  const isMandatory = column.id.includes('to-do') || column.name.toLowerCase().includes('to do') ||
+    column.id.includes('progress') || column.name.toLowerCase().includes('progress') ||
+    column.id.includes('done') || column.name.toLowerCase().includes('done');
   const visibleCards = showCompleted ? column.cards : column.cards.filter(c => !c.done);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -100,12 +105,23 @@ export default function ColumnView({
       onDragLeave={(e) => { if (e.currentTarget === e.target) setDragOverIndex(null); }}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border flex-shrink-0">
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border flex-shrink-0 group">
         {icon}
         <span className="text-sm font-medium text-foreground truncate flex-1">
           {displayName(column)}
         </span>
-        <Badge variant="secondary" className="ml-auto flex-shrink-0">{visibleCards.length}</Badge>
+        <Badge variant="secondary" className="flex-shrink-0">{visibleCards.length}</Badge>
+        {!isMandatory && onDeleteColumn && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Delete column ${displayName(column)}`}
+            className="flex-shrink-0 -mr-1 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={() => onDeleteColumn(column.id)}
+          >
+            <Trash className="w-3.5 h-3.5" />
+          </Button>
+        )}
       </div>
 
       {/* Cards */}

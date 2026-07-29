@@ -16,7 +16,7 @@ export default function App() {
 
   return (
     <>
-      <BoardShell {...board} addColumn={board.addColumn!} />
+      <BoardShell {...board} addColumn={board.addColumn!} deleteColumn={board.deleteColumn!} />
       <ConvertDialog
         open={showConvert}
         columnNames={board.board.columns.map(c => c.name)}

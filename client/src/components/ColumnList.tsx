@@ -15,6 +15,7 @@ interface ColumnListProps {
   onEdit: (cardId: string, title: string, description: string) => void;
   onMove: (cardId: string, toColumnId: string, toIndex: number) => void;
   onAddColumn: (name: string) => void;
+  onDeleteColumn: (columnId: string) => void;
   dragCardId: string | null;
   dragColumnId: string | null;
   onDragStart: (cardId: string, columnId: string) => void;
@@ -23,7 +24,7 @@ interface ColumnListProps {
 
 export default function ColumnList({
   columns, showCompleted, priorities, onToggle, onDelete, onAdd, onEdit,
-  onMove, onAddColumn, dragCardId, dragColumnId, onDragStart, onDragEnd,
+  onMove, onAddColumn, onDeleteColumn, dragCardId, dragColumnId, onDragStart, onDragEnd,
 }: ColumnListProps) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
@@ -56,6 +57,7 @@ export default function ColumnList({
             onAdd={onAdd}
             onEdit={onEdit}
             onMove={onMove}
+            onDeleteColumn={onDeleteColumn}
             dragCardId={dragCardId}
             dragColumnId={dragColumnId}
             onDragStart={onDragStart}

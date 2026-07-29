@@ -21,11 +21,12 @@ interface BoardShellProps {
   deleteCard: (cardId: string) => void;
   editCard: (cardId: string, title: string, description: string) => void;
   addColumn: (name: string) => void;
+  deleteColumn: (columnId: string) => void;
   undoDelete: () => void;
 }
 
 export default function BoardShell(props: BoardShellProps) {
-  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, addColumn, undoDelete } = props;
+  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, addColumn, deleteColumn, undoDelete } = props;
 
   const [dragCardId, setDragCardId] = useState<string | null>(null);
   const [dragColumnId, setDragColumnId] = useState<string | null>(null);
@@ -113,6 +114,7 @@ export default function BoardShell(props: BoardShellProps) {
           onEdit={editCard}
           onMove={moveCard}
           onAddColumn={addColumn}
+          onDeleteColumn={deleteColumn}
           dragCardId={dragCardId}
           dragColumnId={dragColumnId}
           onDragStart={(cardId, columnId) => {
