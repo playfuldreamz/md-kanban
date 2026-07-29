@@ -55,10 +55,6 @@
 
 
 ## In Progress
-- [x] **Dark mode synced to OS preference** — Three-way theme toggle cycles system → light → dark. Appica UI ThemeProvider enableSystem already respects prefers-color-scheme by default. Manual override persists in localStorage; "system" option restores OS sync. #polish
-  - [x] **ThemeToggle** — changed from binary light/dark to three-way cycle (system → light → dark) with Monitor icon for system mode
-  - [x] **ThemeProvider** — enableSystem already defaults to true; no provider changes needed
-
 
 ## Done
 - [x] **Sub-tasks (nested checkboxes)** — Indented - [ ] lines parse as children of parent cards. Render as collapsible list with progress badge (2/5). Unlimited nesting depth in data model; UI renders up to 4 visual levels. #critical
@@ -69,3 +65,6 @@
   - [x] **UI** — SubTaskSection + SubTaskItem recursive components with depth-based styling and progress badges
   - [x] **Refactor** — split 583-line server.js into server.js (209), lib/routes.js (241), lib/server-utils.js (133)
   - [x] **Tests** — 4 new parser tests, 3 new writer tests, 4 new reducer tests, 2 new parseCardLine tests
+- [x] **Dark mode synced to OS preference** — Three-way theme toggle cycles system → light → dark. Appica UI ThemeProvider enableSystem already respects prefers-color-scheme by default. Manual override persists in localStorage; choosing "system" restores OS sync. #polish
+  - [x] **ThemeToggle** — changed from binary light/dark to three-way cycle (system → light → dark) with DeviceDesktop icon for system mode
+  - [x] **ThemeProvider** — enableSystem already defaults to true; no provider changes needed

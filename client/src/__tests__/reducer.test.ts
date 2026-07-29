@@ -31,15 +31,27 @@ describe('boardReducer', () => {
     expect(next).toEqual(sampleBoard);
   });
 
-  it('CARD_TOGGLE flips done state', () => {
+  it('CARD_TOGGLE flips done state and auto-moves to Done', () => {
+    // Card '1' in 'todo' (non-Done) → toggling to done auto-moves to Done
     const next = boardReducer(sampleBoard, { type: 'CARD_TOGGLE', cardId: '1' });
-    expect(next.columns[0].cards[0].done).toBe(true);
-    expect(next.columns[0].cards[0]._changed).toBe(true);
+    // Card moved to Done column
+    const doneCol = next.columns.find(c => c.id === 'done')!;
+    const movedCard = doneCol.cards.find(c => c.id === '1');
+    expect(movedCard).toBeDefined();
+    expect(movedCard!.done).toBe(true);
+    expect(movedCard!._changed).toBe(true);
+    // Original column lost the card
+    expect(next.columns[0].cards.find(c => c.id === '1')).toBeUndefined();
   });
 
-  it('CARD_TOGGLE toggles back', () => {
+  it('CARD_TOGGLE toggles back and auto-moves out of Done', () => {
+    // Card '3' in 'done' → toggling to undone auto-moves to To Do
     const next = boardReducer(sampleBoard, { type: 'CARD_TOGGLE', cardId: '3' });
-    expect(next.columns[1].cards[0].done).toBe(false);
+    // Card moved to first non-Done column (todo)
+    const todoCol = next.columns.find(c => c.id === 'todo')!;
+    const movedCard = todoCol.cards.find(c => c.id === '3');
+    expect(movedCard).toBeDefined();
+    expect(movedCard!.done).toBe(false);
   });
 
   it('CARD_TOGGLE with unknown id does nothing', () => {

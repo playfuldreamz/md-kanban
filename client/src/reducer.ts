@@ -21,11 +21,33 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
       return action.board;
 
     case 'CARD_TOGGLE': {
-      return mapCard(state, action.cardId, (card) => ({
+      // Find which column this card is in (top-level only — sub-tasks handled by SUBTASK_TOGGLE)
+      const sourceCol = state.columns.find((col) =>
+        col.cards.some((c) => c.id === action.cardId),
+      );
+      const isTopLevel = sourceCol !== undefined;
+
+      let next = mapCard(state, action.cardId, (card) => ({
         ...card,
         done: !card.done,
         _changed: true,
       }));
+
+      // Auto-move top-level cards: check → Done, uncheck → out of Done
+      if (isTopLevel && sourceCol) {
+        const card = sourceCol.cards.find((c) => c.id === action.cardId)!;
+        const newDone = !card.done;
+        if (newDone && !isDoneColumn(sourceCol)) {
+          // Card was checked in non-Done column → move to Done
+          next = moveCardBetweenColumns(next, action.cardId, findDoneColumn(next)?.id || sourceCol.id, 0);
+        } else if (!newDone && isDoneColumn(sourceCol)) {
+          // Card was unchecked in Done → move to first non-Done column
+          const todo = next.columns.find((c) => !isDoneColumn(c)) || next.columns[0];
+          next = moveCardBetweenColumns(next, action.cardId, todo.id, 0);
+        }
+      }
+
+      return next;
     }
 
     case 'CARD_MOVE': {
@@ -184,6 +206,41 @@ function setDoneRecursive(card: Card, done: boolean): Card {
     done,
     _changed: true,
     children: card.children?.map((c) => setDoneRecursive(c, done)),
+  };
+}
+
+/** Find the Done column, or return undefined. */
+function findDoneColumn(state: BoardState) {
+  return state.columns.find((c) => isDoneColumn(c));
+}
+
+/** Move a card from its current column to a target column at a given index. */
+function moveCardBetweenColumns(
+  state: BoardState,
+  cardId: string,
+  toColumnId: string,
+  toIndex: number,
+): BoardState {
+  let movedCard: Card | null = null;
+  const stripped = state.columns.map((col) => {
+    const idx = col.cards.findIndex((c) => c.id === cardId);
+    if (idx !== -1) {
+      movedCard = col.cards[idx];
+      return { ...col, cards: [...col.cards.slice(0, idx), ...col.cards.slice(idx + 1)] };
+    }
+    return col;
+  });
+  if (!movedCard) return state;
+  return {
+    ...state,
+    columns: stripped.map((col) => {
+      if (col.id === toColumnId) {
+        const cards = [...col.cards];
+        cards.splice(toIndex, 0, movedCard!);
+        return { ...col, cards };
+      }
+      return col;
+    }),
   };
 }
 

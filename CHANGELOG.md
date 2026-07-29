@@ -2,6 +2,17 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: auto-complete/reopen when moving cards to/from Done column
+  
+  Dragging a card (and all its sub-tasks) to the Done column now
+  automatically marks everything done. Moving back unchecks everything.
+  
+  - Reducer: CARD_MOVE detects source/target Done columns and calls
+    setDoneRecursive to toggle the entire tree optimistically
+  - Server: same logic in lib/routes.js move handler — the file write
+    includes the updated done states so the file is the source of truth
+  - Both use isDoneColumn() to detect Done by id or name (matches
+    'done', 'to-do', 'in-progress' workflow columns)
 - feat: three-way theme toggle with OS preference sync
   
   ThemeToggle now cycles system → light → dark instead of binary
