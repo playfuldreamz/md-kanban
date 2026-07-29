@@ -44,6 +44,9 @@ interface ColumnViewProps {
   onEdit: (cardId: string, title: string, description: string) => void;
   onMove: (cardId: string, toColumnId: string, toIndex: number) => void;
   onDeleteColumn?: (columnId: string) => void;
+  onToggleSubTask: (parentId: string, childId: string) => void;
+  onAddSubTask: (parentId: string, title: string) => void;
+  onDeleteSubTask: (parentId: string, childId: string) => void;
   dragCardId: string | null;
   dragColumnId: string | null;
   onDragStart: (cardId: string, columnId: string) => void;
@@ -52,7 +55,8 @@ interface ColumnViewProps {
 
 export default function ColumnView({
   column, showCompleted, priorities, onToggle, onDelete, onAdd, onEdit,
-  onMove, onDeleteColumn, dragCardId, dragColumnId, onDragStart, onDragEnd,
+  onMove, onDeleteColumn, onToggleSubTask, onAddSubTask, onDeleteSubTask,
+  dragCardId, dragColumnId, onDragStart, onDragEnd,
 }: ColumnViewProps) {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const cardListRef = useRef<HTMLDivElement>(null);
@@ -148,6 +152,9 @@ export default function ColumnView({
               onToggle={() => onToggle(card.id)}
               onDelete={() => onDelete(card.id)}
               onEdit={onEdit}
+              onToggleSubTask={onToggleSubTask}
+              onAddSubTask={onAddSubTask}
+              onDeleteSubTask={onDeleteSubTask}
               onDragStart={() => onDragStart(card.id, column.id)}
               onDragEnd={onDragEnd}
             />

@@ -23,10 +23,13 @@ interface BoardShellProps {
   addColumn: (name: string) => void;
   deleteColumn: (columnId: string) => void;
   undoDelete: () => void;
+  toggleSubTask: (parentId: string, childId: string) => void;
+  addSubTask: (parentId: string, title: string) => void;
+  deleteSubTask: (parentId: string, childId: string) => void;
 }
 
 export default function BoardShell(props: BoardShellProps) {
-  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, addColumn, deleteColumn, undoDelete } = props;
+  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, addColumn, deleteColumn, undoDelete, toggleSubTask, addSubTask, deleteSubTask } = props;
 
   const [dragCardId, setDragCardId] = useState<string | null>(null);
   const [dragColumnId, setDragColumnId] = useState<string | null>(null);
@@ -115,6 +118,9 @@ export default function BoardShell(props: BoardShellProps) {
           onMove={moveCard}
           onAddColumn={addColumn}
           onDeleteColumn={deleteColumn}
+          onToggleSubTask={toggleSubTask}
+          onAddSubTask={addSubTask}
+          onDeleteSubTask={deleteSubTask}
           dragCardId={dragCardId}
           dragColumnId={dragColumnId}
           onDragStart={(cardId, columnId) => {

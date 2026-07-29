@@ -166,6 +166,80 @@ export function useBoard() {
     [apiBase],
   );
 
+  // ─── Sub-task mutations ──────────────────────────────────────────────
+
+  /** Toggle a sub-task's done state. Sends full children array to server. */
+  const toggleSubTask = useCallback(
+    async (parentId: string, childId: string) => {
+      dispatch({ type: 'SUBTASK_TOGGLE', parentId, childId });
+      try {
+        const parent = findCard(board, parentId);
+        if (parent && parent.children) {
+          const updatedChildren = parent.children.map((c) =>
+            c.id === childId ? { ...c, done: !c.done, _changed: true } : c,
+          );
+          await fetch(`${apiBase}/api/cards/${parentId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ children: updatedChildren }),
+          });
+        }
+      } catch {
+        // WebSocket sync will reconcile
+      }
+    },
+    [board, apiBase],
+  );
+
+  /** Add a sub-task to a card. */
+  const addSubTask = useCallback(
+    async (parentId: string, title: string) => {
+      dispatch({ type: 'SUBTASK_ADD', parentId, title });
+      try {
+        const parent = findCard(board, parentId);
+        if (parent) {
+          const newChild = {
+            id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+            done: false,
+            title: title.trim(),
+            description: '',
+            rawLine: `  - [ ] ${title.trim()}`,
+          };
+          const updatedChildren = [...(parent.children || []), newChild];
+          await fetch(`${apiBase}/api/cards/${parentId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ children: updatedChildren }),
+          });
+        }
+      } catch {
+        // WebSocket sync will reconcile
+      }
+    },
+    [board, apiBase],
+  );
+
+  /** Delete a sub-task from a card. */
+  const deleteSubTask = useCallback(
+    async (parentId: string, childId: string) => {
+      dispatch({ type: 'SUBTASK_DELETE', parentId, childId });
+      try {
+        const parent = findCard(board, parentId);
+        if (parent && parent.children) {
+          const updatedChildren = parent.children.filter((c) => c.id !== childId);
+          await fetch(`${apiBase}/api/cards/${parentId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ children: updatedChildren }),
+          });
+        }
+      } catch {
+        // WebSocket sync will reconcile
+      }
+    },
+    [board, apiBase],
+  );
+
   const addColumn = useCallback(
     async (name: string) => {
       try {
@@ -236,14 +310,32 @@ export function useBoard() {
     needsConversion,
     convertBoard,
     deleteColumn,
+    toggleSubTask,
+    addSubTask,
+    deleteSubTask,
   };
 }
 
-/** Find a card by ID across all columns. */
+/** Find a card by ID across all columns, recursively searching children. */
 function findCard(board: BoardState, cardId: string): Card | null {
   for (const col of board.columns) {
     const card = col.cards.find((c) => c.id === cardId);
     if (card) return card;
+    // Search children
+    for (const c of col.cards) {
+      const found = findCardInTree(c, cardId);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function findCardInTree(card: Card, cardId: string): Card | null {
+  if (!card.children) return null;
+  for (const child of card.children) {
+    if (child.id === cardId) return child;
+    const deeper = findCardInTree(child, cardId);
+    if (deeper) return deeper;
   }
   return null;
 }

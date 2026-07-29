@@ -109,4 +109,110 @@ describe('boardReducer', () => {
     });
     expect(next.columns[1].cards[1].id).toBe('1');
   });
+
+  // ─── Sub-task tests ────────────────────────────────────────────────
+
+  it('SUBTASK_TOGGLE flips child done state', () => {
+    const boardWithChildren: BoardState = {
+      title: 'Test',
+      columns: [{
+        id: 'todo',
+        name: 'To Do',
+        emoji: null,
+        cards: [{
+          id: 'parent1',
+          done: false,
+          title: 'Parent',
+          description: '',
+          rawLine: '- [ ] **Parent**',
+          children: [
+            { id: 'child1', done: false, title: 'Child A', description: '', rawLine: '  - [ ] Child A' },
+            { id: 'child2', done: true, title: 'Child B', description: '', rawLine: '  - [x] Child B' },
+          ],
+        }],
+      }],
+    };
+
+    const next = boardReducer(boardWithChildren, { type: 'SUBTASK_TOGGLE', parentId: 'parent1', childId: 'child1' });
+    expect(next.columns[0].cards[0].children![0].done).toBe(true);
+    expect(next.columns[0].cards[0].children![0]._changed).toBe(true);
+    // Other child unchanged
+    expect(next.columns[0].cards[0].children![1].done).toBe(true);
+  });
+
+  it('SUBTASK_ADD appends child to parent', () => {
+    const boardWithParent: BoardState = {
+      title: 'Test',
+      columns: [{
+        id: 'todo',
+        name: 'To Do',
+        emoji: null,
+        cards: [{
+          id: 'parent1',
+          done: false,
+          title: 'Parent',
+          description: '',
+          rawLine: '- [ ] **Parent**',
+        }],
+      }],
+    };
+
+    const next = boardReducer(boardWithParent, { type: 'SUBTASK_ADD', parentId: 'parent1', title: 'New child' });
+    expect(next.columns[0].cards[0].children).toBeDefined();
+    expect(next.columns[0].cards[0].children!).toHaveLength(1);
+    expect(next.columns[0].cards[0].children![0].title).toBe('New child');
+    expect(next.columns[0].cards[0].children![0].done).toBe(false);
+    expect(next.columns[0].cards[0]._changed).toBe(true);
+  });
+
+  it('SUBTASK_DELETE removes child from parent', () => {
+    const boardWithChildren: BoardState = {
+      title: 'Test',
+      columns: [{
+        id: 'todo',
+        name: 'To Do',
+        emoji: null,
+        cards: [{
+          id: 'parent1',
+          done: false,
+          title: 'Parent',
+          description: '',
+          rawLine: '- [ ] **Parent**',
+          children: [
+            { id: 'child1', done: false, title: 'Child A', description: '', rawLine: '  - [ ] Child A' },
+            { id: 'child2', done: true, title: 'Child B', description: '', rawLine: '  - [x] Child B' },
+          ],
+        }],
+      }],
+    };
+
+    const next = boardReducer(boardWithChildren, { type: 'SUBTASK_DELETE', parentId: 'parent1', childId: 'child1' });
+    expect(next.columns[0].cards[0].children!).toHaveLength(1);
+    expect(next.columns[0].cards[0].children![0].id).toBe('child2');
+    expect(next.columns[0].cards[0]._changed).toBe(true);
+  });
+
+  it('SUBTASK_DELETE with unknown child does nothing', () => {
+    const boardWithChildren: BoardState = {
+      title: 'Test',
+      columns: [{
+        id: 'todo',
+        name: 'To Do',
+        emoji: null,
+        cards: [{
+          id: 'parent1',
+          done: false,
+          title: 'Parent',
+          description: '',
+          rawLine: '- [ ] **Parent**',
+          children: [
+            { id: 'child1', done: false, title: 'Child A', description: '', rawLine: '  - [ ] Child A' },
+          ],
+        }],
+      }],
+    };
+
+    const next = boardReducer(boardWithChildren, { type: 'SUBTASK_DELETE', parentId: 'parent1', childId: 'nope' });
+    expect(next.columns[0].cards[0].children!).toHaveLength(1);
+  });
 });

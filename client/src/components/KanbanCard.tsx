@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@appica/ui-react/button';
-import { Trash, Pencil } from '@appica/icons-react';
+import { Checkbox } from '@appica/ui-react/checkbox';
+import { Trash, Pencil, ChevronRight, Plus, X } from '@appica/icons-react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -48,16 +49,20 @@ interface KanbanCardProps {
   onToggle: () => void;
   onDelete: () => void;
   onEdit?: (cardId: string, title: string, description: string) => void;
+  onToggleSubTask?: (parentId: string, childId: string) => void;
+  onAddSubTask?: (parentId: string, title: string) => void;
+  onDeleteSubTask?: (parentId: string, childId: string) => void;
   onDragStart?: () => void;
   onDragEnd?: () => void;
 }
 
-export default function KanbanCard({ card, isDragging, columnName, priorities, onToggle, onDelete, onEdit, onDragStart, onDragEnd }: KanbanCardProps) {
+export default function KanbanCard({ card, isDragging, columnName, priorities, onToggle, onDelete, onEdit, onToggleSubTask, onAddSubTask, onDeleteSubTask, onDragStart, onDragEnd }: KanbanCardProps) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string } | null>(null);
+  const [childrenOpen, setChildrenOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const propsPriorities = priorities;
   const indicators = card.description
@@ -129,9 +134,9 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
             {card.description && (
               <p className="text-xs text-foreground-muted mt-1 line-clamp-3">{card.description}</p>
             )}
-            {/* Priority dots — absolute bottom right */}
+            {/* Priority dots */}
             {indicators.length > 0 && (
-              <div className="absolute bottom-2 right-2 flex items-center gap-1">
+              <div className="flex items-center gap-1 mt-1.5">
                 {indicators.map((p, i) => (
                   <div
                     key={i}
@@ -168,6 +173,18 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
             <Trash className="w-3.5 h-3.5" />
           </Button>
         </div>
+
+        {/* Sub-tasks / children section */}
+        <SubTaskSection
+          parentId={card.id}
+          childrenCards={card.children}
+          open={childrenOpen}
+          onToggleOpen={setChildrenOpen}
+          onToggleSubTask={onToggleSubTask}
+          onAddSubTask={onAddSubTask}
+          onDeleteSubTask={onDeleteSubTask}
+          depth={0}
+        />
       </div>
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
@@ -213,5 +230,268 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
         document.body
       )}
     </>
+  );
+}
+
+// ─── Recursive sub-task components ──────────────────────────────────────────
+
+const MAX_VISUAL_DEPTH = 4;
+
+interface SubTaskSectionProps {
+  parentId: string;
+  childrenCards?: Card[];
+  open: boolean;
+  onToggleOpen: (open: boolean) => void;
+  onToggleSubTask?: (parentId: string, childId: string) => void;
+  onAddSubTask?: (parentId: string, title: string) => void;
+  onDeleteSubTask?: (parentId: string, childId: string) => void;
+  depth: number;
+}
+
+function SubTaskSection({
+  parentId, childrenCards, open, onToggleOpen,
+  onToggleSubTask, onAddSubTask, onDeleteSubTask, depth,
+}: SubTaskSectionProps) {
+  const hasChildren = childrenCards && childrenCards.length > 0;
+  const doneCount = hasChildren ? childrenCards!.filter(c => c.done).length : 0;
+  const total = hasChildren ? childrenCards!.length : 0;
+  const allDone = hasChildren && doneCount === total;
+  const canNest = depth < MAX_VISUAL_DEPTH;
+
+  // Don't render anything if no children and no callbacks (top-level card without sub-task support)
+  if (!hasChildren && !onAddSubTask) return null;
+
+  return (
+    <div className={depth === 0 ? 'mt-2 pt-2 border-t border-border' : ''}>
+      {/* Header: chevron + progress badge */}
+      {hasChildren && (
+        <button
+          onClick={() => onToggleOpen(!open)}
+          className="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors w-full"
+        >
+          <ChevronRight
+            className={`w-3 h-3 transition-transform ${open ? 'rotate-90' : ''}`}
+          />
+          <span
+            className={`font-medium tabular-nums ${
+              allDone ? 'text-emerald-500' : doneCount > 0 ? 'text-amber-500' : 'text-foreground-muted'
+            }`}
+          >
+            {doneCount}/{total}
+          </span>
+          <span className="text-foreground-subtle">
+            {depth === 0 ? 'sub-tasks' : ''}
+          </span>
+        </button>
+      )}
+
+      {/* Children list */}
+      {open && hasChildren && (
+        <div className="mt-1 space-y-0.5">
+          {childrenCards!.map((child) => (
+            <SubTaskItem
+              key={child.id}
+              child={child}
+              parentId={parentId}
+              depth={depth + 1}
+              canNest={canNest}
+              onToggleSubTask={onToggleSubTask}
+              onAddSubTask={onAddSubTask}
+              onDeleteSubTask={onDeleteSubTask}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Add sub-task button */}
+      {canNest && onAddSubTask && (
+        <AddSubTaskInline
+          parentId={parentId}
+          onAdd={onAddSubTask}
+          onAdded={() => onToggleOpen(true)}
+        />
+      )}
+    </div>
+  );
+}
+
+interface SubTaskItemProps {
+  child: Card;
+  parentId: string;
+  depth: number;
+  canNest: boolean;
+  onToggleSubTask?: (parentId: string, childId: string) => void;
+  onAddSubTask?: (parentId: string, title: string) => void;
+  onDeleteSubTask?: (parentId: string, childId: string) => void;
+}
+
+function SubTaskItem({
+  child, parentId, depth, canNest,
+  onToggleSubTask, onAddSubTask, onDeleteSubTask,
+}: SubTaskItemProps) {
+  const [open, setOpen] = useState(false);
+  const hasKids = child.children && child.children.length > 0;
+  const doneCount = hasKids ? child.children!.filter(c => c.done).length : 0;
+  const totalKids = hasKids ? child.children!.length : 0;
+  const allKidsDone = hasKids && doneCount === totalKids;
+
+  const depthColor = depth >= 3 ? 'text-foreground-subtle' : depth >= 2 ? 'text-foreground-muted' : 'text-foreground';
+
+  return (
+    <div>
+      {/* Row: checkbox + expand chevron + title + delete */}
+      <div
+        className="group/child flex items-center gap-1.5 py-0.5"
+        style={{ paddingLeft: `${depth * 4}px` }}
+      >
+        {/* Expand chevron (if this child has its own children) */}
+        {hasKids && canNest ? (
+          <button
+            onClick={() => setOpen(!open)}
+            className="flex items-center gap-0.5 flex-shrink-0"
+          >
+            <ChevronRight
+              className={`w-2.5 h-2.5 text-foreground-muted transition-transform ${open ? 'rotate-90' : ''}`}
+            />
+            <span
+              className={`text-[10px] font-medium tabular-nums ${
+                allKidsDone ? 'text-emerald-500' : doneCount > 0 ? 'text-amber-500' : 'text-foreground-muted'
+              }`}
+            >
+              {doneCount}/{totalKids}
+            </span>
+          </button>
+        ) : hasKids && !canNest ? (
+          /* Too deep — show count but no expansion */
+          <span className="text-[10px] text-foreground-subtle tabular-nums flex-shrink-0 w-10 text-right">
+            {doneCount}/{totalKids}
+          </span>
+        ) : (
+          /* No children — spacer for alignment */
+          <span className="w-2.5 flex-shrink-0" />
+        )}
+
+        <Checkbox
+          checked={child.done}
+          onCheckedChange={() => onToggleSubTask?.(parentId, child.id)}
+          className={`h-3.5 w-3.5 flex-shrink-0 ${depth >= 3 ? 'opacity-60' : ''}`}
+          aria-label={`Toggle ${child.title}`}
+        />
+        <span
+          className={`text-xs flex-1 truncate ${child.done ? 'line-through text-foreground-muted' : depthColor}`}
+        >
+          {child.title}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={`Delete sub-task ${child.title}`}
+          className="opacity-0 group-hover/child:opacity-100 transition-opacity h-5 w-5 flex-shrink-0"
+          onClick={() => onDeleteSubTask?.(parentId, child.id)}
+        >
+          <X className="w-3 h-3" />
+        </Button>
+      </div>
+
+      {/* Recursive children + add button */}
+      {(open || !hasKids) && canNest && onAddSubTask ? (
+        <div style={{ paddingLeft: `${(depth + 1) * 4}px` }}>
+          <SubTaskSection
+            parentId={child.id}
+            childrenCards={child.children}
+            open={open}
+            onToggleOpen={setOpen}
+            onToggleSubTask={onToggleSubTask}
+            onAddSubTask={onAddSubTask}
+            onDeleteSubTask={onDeleteSubTask}
+            depth={depth + 1}
+          />
+        </div>
+      ) : open && hasKids && !canNest ? (
+        /* Too deep for nesting — still show children flat */
+        <div style={{ paddingLeft: `${(depth + 1) * 4}px` }}>
+          {child.children!.map((gc) => (
+            <SubTaskItem
+              key={gc.id}
+              child={gc}
+              parentId={child.id}
+              depth={depth + 1}
+              canNest={false}
+              onToggleSubTask={onToggleSubTask}
+              onAddSubTask={undefined}
+              onDeleteSubTask={onDeleteSubTask}
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** Inline "Add sub-task" input that appears below a list. */
+function AddSubTaskInline({
+  parentId, onAdd, onAdded,
+}: {
+  parentId: string;
+  onAdd: (parentId: string, title: string) => void;
+  onAdded: () => void;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [title, setTitle] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  if (!adding) {
+    return (
+      <button
+        onClick={() => {
+          setAdding(true);
+          setTimeout(() => inputRef.current?.focus(), 0);
+        }}
+        className="flex items-center gap-1 mt-1 text-xs text-foreground-subtle hover:text-foreground transition-colors"
+      >
+        <Plus className="w-3 h-3" />
+        Add sub-task
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-1 flex items-center gap-1.5">
+      <input
+        ref={inputRef}
+        type="text"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && title.trim()) {
+            onAdd(parentId, title.trim());
+            setTitle('');
+            setAdding(false);
+            onAdded();
+          }
+          if (e.key === 'Escape') {
+            setTitle('');
+            setAdding(false);
+          }
+        }}
+        onBlur={() => {
+          if (!title.trim()) {
+            setAdding(false);
+            setTitle('');
+          }
+        }}
+        placeholder="Sub-task title..."
+        className="flex-1 text-xs bg-background border border-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+        autoFocus
+      />
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        className="h-5 w-5"
+        onClick={() => { setAdding(false); setTitle(''); }}
+      >
+        <X className="w-3 h-3" />
+      </Button>
+    </div>
   );
 }

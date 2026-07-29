@@ -6,6 +6,7 @@ export interface Card {
   title: string;
   description: string;
   rawLine: string;
+  children?: Card[];
   _changed?: boolean;
 }
 

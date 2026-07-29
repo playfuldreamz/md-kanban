@@ -64,7 +64,13 @@ kanban-md/
 
 ## Critical Rules
 
-### 0. Thoroughness before speed
+### 0. File size — never exceed 500 lines
+
+**Every file must stay under 500 lines.** Before editing any file, check its line count. If your planned edits would push it past ~480 lines, **stop and suggest a refactor before writing code.** Split the file into smaller modules — move helper functions to a `lib/` file, extract route handlers into their own module, or break a large component into sub-components.
+
+This is not optional. If a file is over 500 lines after your edits, you have violated this rule and must refactor before the work is considered done.
+
+### 1. Thoroughness before speed
 
 **Never rush to finish a task.** Before writing any code:
 1. **Ask clarifying questions** — if anything is ambiguous, ask. Don't guess.
@@ -78,11 +84,11 @@ kanban-md/
 4. **Test the full user journey** — not just the happy path. Add, edit, save, refresh, re-open, check persistence.
 5. **Verify persistence** — if something is "saved", read the file to prove it.
 
-### 1. The file is ALWAYS the source of truth
+### 2. The file is ALWAYS the source of truth
 
 Never store state anywhere except the TODO.md file. The server keeps a parsed copy in memory for broadcasting, but every mutation writes through to the file. If the file write fails, the API returns 500 and the frontend reverts its optimistic update. There is no database, no cache file, no `.kanban-state.json`. The file is the database.
 
-### 2. Optimistic UI → API → File → WebSocket → Reconcile
+### 3. Optimistic UI → API → File → WebSocket → Reconcile
 
 Every mutation follows this exact chain:
 ```
@@ -97,11 +103,11 @@ User action
 
 The reconciliation step is critical. The server state always wins. If it differs from the optimistic state (due to a concurrent file edit), the optimistic update is discarded. This prevents drift between the browser and the file.
 
-### 3. Appica UI components ONLY for UI
+### 4. Appica UI components ONLY for UI
 
 Every visible element uses Appica UI components. No raw `<button>`, no raw `<input>`, no custom CSS classes beyond Tailwind utilities. The only exception is the drag-and-drop overlay (a semi-transparent clone of the dragged card), which uses raw divs for performance.
 
-### 4. No state library
+### 5. No state library
 
 A single `useReducer` in `BoardShell` holds all state. No Redux, Zustand, Jotai, or Context for board state. The reducer handles 6 action types:
 - `BOARD_SYNC` — replace entire state
@@ -111,15 +117,15 @@ A single `useReducer` in `BoardShell` holds all state. No Redux, Zustand, Jotai,
 - `CARD_EDIT` — update title/description
 - `CARD_DELETE` — remove
 
-### 5. Dragging uses HTML5 DnD, not a library
+### 6. Dragging uses HTML5 DnD, not a library
 
 No `@dnd-kit`, no `react-beautiful-dnd`. HTML5 Drag and Drop API is sufficient for a single-user Kanban board. Touch support can use a small polyfill if needed, but mouse-first is acceptable for v1.
 
-### 6. The server is vanilla Node.js
+### 7. The server is vanilla Node.js
 
 No TypeScript on the server side. The server is small enough (~200 lines) that types don't add value. Use JSDoc comments for editor intellisense. The client is TypeScript because React components benefit from prop types.
 
-### 7. Tests for parser are mandatory
+### 8. Tests for parser are mandatory
 
 The parser is the most critical piece — if it misparses, cards disappear. Minimum 20 test cases covering:
 - Every valid input format
@@ -129,7 +135,7 @@ The parser is the most critical piece — if it misparses, cards disappear. Mini
 - Round-trip fidelity
 - Minimal diff output
 
-### 8. Zero dependency on NoteAPP
+### 9. Zero dependency on NoteAPP
 
 This directory must be self-contained. It cannot import from `../../backend/` or `../../frontend/`. When extracted, it works standalone. The only shared artifact is the TODO.md format itself.
 
