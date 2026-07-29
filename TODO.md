@@ -37,7 +37,6 @@
 - [ ] **Due dates** — Parse due dates from card text (due:YYYY-MM-DD or 📅 YYYY-MM-DD) and show visual indicators. Overdue cards get a red badge. A "Due Soon" filter in the search palette. #critical
   - [ ] **sdadasd** <!-- created:2026-07-29 -->
 - [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
-- [ ] **Search & filter** — Cmd+K command palette that filters cards across all columns by title, description, or tag. Filters: done, not done, critical only, due this week, by assignee. #critical
 - [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical
 - [ ] **Undo/redo stack** — Ring buffer of ~20 board states. Ctrl+Z / Ctrl+Shift+Z step through history. Protects against accidental drags, edits, and deletes. Extends the existing delete-undo toast. #important
 - [ ] **Card labels / tag system beyond priority** — Any #tag in a description renders as a colored badge. User-defined colors via the @priorities block in the preamble. Unlocks #bug, #feature, #docs, #frontend, #backend. #important
@@ -56,7 +55,12 @@
 ## In Progress
 
 
+
 ## Done
+- [x] **Search & filter** — Cmd+K / Ctrl+K command palette that filters all cards (including sub-tasks) by title, description, tag, or column. Results show column badge, priority tags, done status. Arrow keys navigate, Enter selects and scrolls to card with highlight. #critical
+  - [x] **CommandPalette** — modal overlay with search input, flattened card list, highlight matching text, keyboard navigation
+  - [x] **BoardShell** — Cmd+K listener, onSelect scrolls to card with brief ring highlight
+  - [x] **flattenBoard** — recursively flattens all cards and sub-tasks into searchable list
 - [x] **Card creation date** — Track when a card was created via HTML comment in rawLine. Parser ignores HTML comments so they survive round-trips. UI shows "Created 3 days ago" on hover. #polish
   - [x] **Parser** — extract createdAt from <!-- created:YYYY-MM-DD --> comment, strip from description
   - [x] **Writer** — append createdAt comment when serializing changed cards

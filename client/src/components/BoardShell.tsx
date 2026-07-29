@@ -6,6 +6,7 @@ import { AlertTriangle, Loader } from '@appica/icons-react';
 import type { BoardState, Card } from '../types';
 import ThemeToggle from './ThemeToggle';
 import ColumnList from './ColumnList';
+import CommandPalette from './CommandPalette';
 import ToastNotifications from './ToastNotifications';
 
 interface BoardShellProps {
@@ -34,6 +35,7 @@ export default function BoardShell(props: BoardShellProps) {
 
   const [dragCardId, setDragCardId] = useState<string | null>(null);
   const [dragColumnId, setDragColumnId] = useState<string | null>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => {
     if (loading || error) return;
@@ -45,10 +47,24 @@ export default function BoardShell(props: BoardShellProps) {
         const firstAddBtn = document.querySelector('[data-add-card-trigger]') as HTMLElement | null;
         firstAddBtn?.click();
       }
+      if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setPaletteOpen(true);
+      }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [loading, error]);
+
+  const handlePaletteSelect = (columnId: string, cardId: string) => {
+    // Scroll to the card and briefly highlight it
+    const el = document.querySelector(`[data-card-id="${cardId}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+      setTimeout(() => el.classList.remove('ring-2', 'ring-primary', 'ring-offset-2'), 2000);
+    }
+  };
 
   if (loading) {
     return (
@@ -135,6 +151,13 @@ export default function BoardShell(props: BoardShellProps) {
           }}
         />
       </div>
+
+      <CommandPalette
+        board={board}
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onSelect={handlePaletteSelect}
+      />
 
       <ToastNotifications error={error} connected={connected} undoCard={undoCard} onUndo={undoDelete} />
     </div>

@@ -2,6 +2,30 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: edit existing sub-tasks (title + description) via pencil icon
+  
+  SubTaskItem rows now show a hover-revealed pencil icon that opens
+  the EditCardDialog pre-filled with the sub-task's title and description.
+  Saving updates the child optimistically via the new SUBTASK_EDIT
+  reducer action, then syncs through PUT /api/cards/:parentId.
+  
+  Callbacks threaded through the full component tree:
+  BoardShell → ColumnList → Column → KanbanCard → SubTaskSection
+  → SubTaskItem → EditCardDialog.
+- feat: edit existing sub-tasks via pencil icon + EditCardDialog
+  
+  SubTaskItem rows now show a hover-revealed pencil icon that opens
+  the EditCardDialog pre-filled with the sub-task's title and description.
+  Saving dispatches the new SUBTASK_EDIT reducer action and syncs
+  through PUT /api/cards/:parentId.
+  
+  New action: SUBTASK_EDIT(parentId, childId, title, description)
+  New callback: onEditSubTask threaded through full component tree
+- feat: edit sub-tasks via pencil icon + EditCardDialog
+  
+  SubTaskItem rows show hover pencil that opens EditCardDialog pre-filled
+  with title + description. New SUBTASK_EDIT action + onEditSubTask
+  callback threaded through full component tree.
 - feat: optional description field when adding sub-tasks
   
   AddSubTaskInline now shows a second input for optional description
