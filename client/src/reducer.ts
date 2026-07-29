@@ -11,6 +11,7 @@ export type BoardAction =
   | { type: 'CARD_DELETE'; cardId: string }
   | { type: 'SUBTASK_TOGGLE'; parentId: string; childId: string }
   | { type: 'SUBTASK_ADD'; parentId: string; title: string; description?: string }
+  | { type: 'SUBTASK_EDIT'; parentId: string; childId: string; title: string; description: string }
   | { type: 'SUBTASK_DELETE'; parentId: string; childId: string };
 
 // ─── Reducer ───────────────────────────────────────────────────────────────
@@ -153,6 +154,18 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
           _changed: true,
         };
       });
+    }
+
+    case 'SUBTASK_EDIT': {
+      return mapCard(state, action.parentId, (card) => ({
+        ...card,
+        children: card.children?.map((child) =>
+          child.id === action.childId
+            ? { ...child, title: action.title, description: action.description, _changed: true }
+            : child,
+        ),
+        _changed: true,
+      }));
     }
 
     case 'SUBTASK_DELETE': {

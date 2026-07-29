@@ -223,6 +223,29 @@ export function useBoard() {
     [board, apiBase],
   );
 
+  /** Edit a sub-task's title and description. */
+  const editSubTask = useCallback(
+    async (parentId: string, childId: string, title: string, description: string) => {
+      dispatch({ type: 'SUBTASK_EDIT', parentId, childId, title, description });
+      try {
+        const parent = findCard(board, parentId);
+        if (parent && parent.children) {
+          const updatedChildren = parent.children.map((c) =>
+            c.id === childId ? { ...c, title, description, _changed: true } : c,
+          );
+          await fetch(`${apiBase}/api/cards/${parentId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ children: updatedChildren }),
+          });
+        }
+      } catch {
+        // WebSocket sync will reconcile
+      }
+    },
+    [board, apiBase],
+  );
+
   /** Delete a sub-task from a card. */
   const deleteSubTask = useCallback(
     async (parentId: string, childId: string) => {
@@ -316,6 +339,7 @@ export function useBoard() {
     deleteColumn,
     toggleSubTask,
     addSubTask,
+    editSubTask,
     deleteSubTask,
   };
 }

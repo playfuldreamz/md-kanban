@@ -18,6 +18,7 @@ interface ColumnListProps {
   onDeleteColumn: (columnId: string) => void;
   onToggleSubTask: (parentId: string, childId: string) => void;
   onAddSubTask: (parentId: string, title: string, description?: string) => void;
+  onEditSubTask: (parentId: string, childId: string, title: string, description: string) => void;
   onDeleteSubTask: (parentId: string, childId: string) => void;
   dragCardId: string | null;
   dragColumnId: string | null;
@@ -27,7 +28,7 @@ interface ColumnListProps {
 
 export default function ColumnList({
   columns, showCompleted, priorities, onToggle, onDelete, onAdd, onEdit,
-  onMove, onAddColumn, onDeleteColumn, onToggleSubTask, onAddSubTask, onDeleteSubTask,
+  onMove, onAddColumn, onDeleteColumn, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask,
   dragCardId, dragColumnId, onDragStart, onDragEnd,
 }: ColumnListProps) {
   const [adding, setAdding] = useState(false);
@@ -64,6 +65,7 @@ export default function ColumnList({
             onDeleteColumn={onDeleteColumn}
             onToggleSubTask={onToggleSubTask}
             onAddSubTask={onAddSubTask}
+            onEditSubTask={onEditSubTask}
             onDeleteSubTask={onDeleteSubTask}
             dragCardId={dragCardId}
             dragColumnId={dragColumnId}

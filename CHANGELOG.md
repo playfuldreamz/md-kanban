@@ -2,6 +2,18 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: optional description field when adding sub-tasks
+  
+  AddSubTaskInline now shows a second input for optional description
+  below the title. Enter commits both. The description flows through
+  the entire stack:
+  
+  - Reducer: SUBTASK_ADD now includes description + createdAt stamp
+  - useBoard: addSubTask(parentId, title, description?)
+  - Server: creates child with description in rawLine via canonical format
+  - UI: two-line form (title + optional description) at every nestable level
+  
+  Also added createdAt auto-stamp to new sub-tasks created from the UI.
 - fix: sub-task descriptions now render with markdown, smaller sizing
   
   SubTaskItem now shows child.description (if present) below the title,

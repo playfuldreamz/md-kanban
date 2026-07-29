@@ -35,6 +35,7 @@
 
 ## To Do
 - [ ] **Due dates** — Parse due dates from card text (due:YYYY-MM-DD or 📅 YYYY-MM-DD) and show visual indicators. Overdue cards get a red badge. A "Due Soon" filter in the search palette. #critical
+  - [ ] **sdadasd** <!-- created:2026-07-29 -->
 - [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
 - [ ] **Search & filter** — Cmd+K command palette that filters cards across all columns by title, description, or tag. Filters: done, not done, critical only, due this week, by assignee. #critical
 - [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical

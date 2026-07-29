@@ -67,12 +67,13 @@ interface KanbanCardProps {
   onEdit?: (cardId: string, title: string, description: string) => void;
   onToggleSubTask?: (parentId: string, childId: string) => void;
   onAddSubTask?: (parentId: string, title: string, description?: string) => void;
+  onEditSubTask?: (parentId: string, childId: string, title: string, description: string) => void;
   onDeleteSubTask?: (parentId: string, childId: string) => void;
   onDragStart?: () => void;
   onDragEnd?: () => void;
 }
 
-export default function KanbanCard({ card, isDragging, columnName, priorities, onToggle, onDelete, onEdit, onToggleSubTask, onAddSubTask, onDeleteSubTask, onDragStart, onDragEnd }: KanbanCardProps) {
+export default function KanbanCard({ card, isDragging, columnName, priorities, onToggle, onDelete, onEdit, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, onDragStart, onDragEnd }: KanbanCardProps) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -202,6 +203,7 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
           onToggleOpen={setChildrenOpen}
           onToggleSubTask={onToggleSubTask}
           onAddSubTask={onAddSubTask}
+          onEditSubTask={onEditSubTask}
           onDeleteSubTask={onDeleteSubTask}
           depth={0}
         />
@@ -264,13 +266,14 @@ interface SubTaskSectionProps {
   onToggleOpen: (open: boolean) => void;
   onToggleSubTask?: (parentId: string, childId: string) => void;
   onAddSubTask?: (parentId: string, title: string, description?: string) => void;
+  onEditSubTask?: (parentId: string, childId: string, title: string, description: string) => void;
   onDeleteSubTask?: (parentId: string, childId: string) => void;
   depth: number;
 }
 
 function SubTaskSection({
   parentId, childrenCards, open, onToggleOpen,
-  onToggleSubTask, onAddSubTask, onDeleteSubTask, depth,
+  onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, depth,
 }: SubTaskSectionProps) {
   const hasChildren = childrenCards && childrenCards.length > 0;
   const doneCount = hasChildren ? childrenCards!.filter(c => c.done).length : 0;
@@ -317,6 +320,7 @@ function SubTaskSection({
               canNest={canNest}
               onToggleSubTask={onToggleSubTask}
               onAddSubTask={onAddSubTask}
+              onEditSubTask={onEditSubTask}
               onDeleteSubTask={onDeleteSubTask}
             />
           ))}
@@ -342,14 +346,16 @@ interface SubTaskItemProps {
   canNest: boolean;
   onToggleSubTask?: (parentId: string, childId: string) => void;
   onAddSubTask?: (parentId: string, title: string, description?: string) => void;
+  onEditSubTask?: (parentId: string, childId: string, title: string, description: string) => void;
   onDeleteSubTask?: (parentId: string, childId: string) => void;
 }
 
 function SubTaskItem({
   child, parentId, depth, canNest,
-  onToggleSubTask, onAddSubTask, onDeleteSubTask,
+  onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask,
 }: SubTaskItemProps) {
   const [open, setOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const hasKids = child.children && child.children.length > 0;
   const doneCount = hasKids ? child.children!.filter(c => c.done).length : 0;
   const totalKids = hasKids ? child.children!.length : 0;
@@ -416,6 +422,15 @@ function SubTaskItem({
         <Button
           variant="ghost"
           size="icon-sm"
+          aria-label={`Edit sub-task ${child.title}`}
+          className="opacity-0 group-hover/child:opacity-100 transition-opacity h-5 w-5 flex-shrink-0"
+          onClick={() => setEditOpen(true)}
+        >
+          <Pencil className="w-3 h-3" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
           aria-label={`Delete sub-task ${child.title}`}
           className="opacity-0 group-hover/child:opacity-100 transition-opacity h-5 w-5 flex-shrink-0"
           onClick={() => onDeleteSubTask?.(parentId, child.id)}
@@ -434,6 +449,7 @@ function SubTaskItem({
             onToggleOpen={setOpen}
             onToggleSubTask={onToggleSubTask}
             onAddSubTask={onAddSubTask}
+            onEditSubTask={onEditSubTask}
             onDeleteSubTask={onDeleteSubTask}
             depth={depth + 1}
           />
@@ -450,11 +466,24 @@ function SubTaskItem({
               canNest={false}
               onToggleSubTask={onToggleSubTask}
               onAddSubTask={undefined}
+              onEditSubTask={onEditSubTask}
               onDeleteSubTask={onDeleteSubTask}
             />
           ))}
         </div>
       ) : null}
+
+      {/* Edit dialog for this sub-task */}
+      <EditCardDialog
+        open={editOpen}
+        title={child.title}
+        description={child.description}
+        priorities={PRIORITY_MAP}
+        onSave={(newTitle, newDesc) => {
+          onEditSubTask?.(parentId, child.id, newTitle, newDesc);
+        }}
+        onClose={() => setEditOpen(false)}
+      />
     </div>
   );
 }
