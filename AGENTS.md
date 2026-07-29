@@ -64,6 +64,20 @@ kanban-md/
 
 ## Critical Rules
 
+### 0. Thoroughness before speed
+
+**Never rush to finish a task.** Before writing any code:
+1. **Ask clarifying questions** — if anything is ambiguous, ask. Don't guess.
+2. **Trace the full data flow** — from user action → frontend → API → server → file → WebSocket → frontend. Verify every hop.
+3. **Scope every edge case** — think like the user AND the developer:
+   - What happens on first use? Second use?
+   - What happens if the API call fails mid-flow?
+   - What happens if two operations race?
+   - What happens after a page refresh?
+   - What happens on a different OS?
+4. **Test the full user journey** — not just the happy path. Add, edit, save, refresh, re-open, check persistence.
+5. **Verify persistence** — if something is "saved", read the file to prove it.
+
 ### 1. The file is ALWAYS the source of truth
 
 Never store state anywhere except the TODO.md file. The server keeps a parsed copy in memory for broadcasting, but every mutation writes through to the file. If the file write fails, the API returns 500 and the frontend reverts its optimistic update. There is no database, no cache file, no `.kanban-state.json`. The file is the database.
@@ -179,7 +193,7 @@ This directory must be self-contained. It cannot import from `../../backend/` or
 - ❌ Adding a drag-and-drop library — HTML5 DnD is enough
 - ❌ Using `any` in TypeScript — the BoardState types are small and well-defined
 - ❌ Skipping optimistic updates — every mutation should feel instant
-- ❌ Forgetting to reconcile after WebSocket sync — server state always wins
+- ❌ Rushing to finish — every PR must reflect complete user journeys, not isolated features
 
 ## Testing
 

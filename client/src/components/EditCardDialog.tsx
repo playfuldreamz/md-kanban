@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -36,18 +36,29 @@ const PRESET_COLORS = [
 export default function EditCardDialog({ open, title, description, priorities, onSave, onClose }: EditCardDialogProps) {
   const [editTitle, setEditTitle] = useState(title);
   const [editDesc, setEditDesc] = useState(description);
+  const [localPriorities, setLocalPriorities] = useState(priorities);
   const [adding, setAdding] = useState(false);
   const [newLabel, setNewLabel] = useState('');
   const [newColor, setNewColor] = useState('bg-purple-500');
   const [newTag, setNewTag] = useState('');
 
+  // Sync from props on open, and sync priorities whenever they change (while open)
+  const prevPrioritiesRef = useRef(priorities);
   useEffect(() => {
+    if (!open) return;
     setEditTitle(title);
     setEditDesc(description);
+    setLocalPriorities(priorities);
     setAdding(false);
     setNewLabel('');
     setNewTag('');
-  }, [title, description, open]);
+  }, [open]);
+  useEffect(() => {
+    if (open && priorities !== prevPrioritiesRef.current) {
+      setLocalPriorities(priorities);
+      prevPrioritiesRef.current = priorities;
+    }
+  }, [open, priorities]);
 
   const toggleTag = (tag: string) => {
     if (editDesc.includes(`#${tag}`)) {
@@ -63,23 +74,23 @@ export default function EditCardDialog({ open, title, description, priorities, o
     if (!tag) return;
     const ring = newColor.replace('bg-', 'ring-') + '/30';
     const updated = {
-      ...priorities,
+      ...localPriorities,
       [tag]: { label: newLabel.trim(), color: newColor, ring },
     };
-    // Persist via API — WebSocket syncs to all clients
-    try {
-      await fetch('/api/priorities', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priorities: updated }),
-      });
-    } catch { /* WebSocket will reconcile */ }
+    // Optimistic update & persist
+    setLocalPriorities(updated);
+    await fetch('/api/priorities', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priorities: updated }),
+    });
+    // Close the add form — the priority list updates when WebSocket syncs
     setAdding(false);
     setNewLabel('');
     setNewTag('');
   };
 
-  const priorityEntries = Object.entries(priorities);
+  const priorityEntries = Object.entries(localPriorities);
 
   return (
     <AlertDialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>

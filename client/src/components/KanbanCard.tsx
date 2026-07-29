@@ -20,13 +20,24 @@ const PRIORITY_MAP: Record<string, { label: string; color: string; ring: string 
   polish: { label: 'Polish', color: 'bg-emerald-500', ring: 'ring-emerald-500/30' },
 };
 
-function extractPriority(text: string, priorities?: Record<string, { label: string; color: string; ring: string }>): { label: string; color: string; ring: string } | null {
+function extractPriorities(text: string, priorities?: Record<string, { label: string; color: string; ring: string }>): { label: string; color: string; ring: string }[] {
   const map = priorities || PRIORITY_MAP;
+  const results: { label: string; color: string; ring: string }[] = [];
+  const seen = new Set<string>();
   const lower = text.toLowerCase();
   for (const [key, val] of Object.entries(map)) {
-    if (lower.includes(`#${key}`) || lower.includes(key)) return val;
+    if ((lower.includes(`#${key}`) || lower.includes(key)) && !seen.has(key)) {
+      seen.add(key);
+      results.push(val);
+    }
   }
-  return null;
+  // Also detect from column name (for old-style files)
+  if (results.length === 0 && text) {
+    for (const [key, val] of Object.entries(map)) {
+      if (lower.includes(key) && !seen.has(key)) { seen.add(key); results.push(val); }
+    }
+  }
+  return results;
 }
 
 interface KanbanCardProps {
@@ -48,8 +59,10 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const priority = card.description ? extractPriority(card.description, priorities) : extractPriority(columnName || '', priorities);
+  const propsPriorities = priorities;
+  const indicators = card.description
+    ? extractPriorities(card.description, propsPriorities)
+    : extractPriorities(columnName || '', propsPriorities);
 
   const startEdit = useCallback(() => {
     if (!onEdit) return;
@@ -76,7 +89,7 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
     <>
       <div
         className={`
-          group rounded-lg border bg-background p-3
+          group relative rounded-lg border bg-background p-3
           transition-shadow duration-150 hover:shadow-md
           ${card.done ? 'border-border-muted opacity-75' : 'border-border'}
           ${isDragging ? 'opacity-50 shadow-lg' : ''}
@@ -93,19 +106,6 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
         onDragEnd={() => onDragEnd?.()}
       >
         <div className="flex items-start gap-2.5">
-          {priority && (
-            <div
-              className="flex-shrink-0 mt-1.5 cursor-default"
-              onMouseEnter={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                setTooltip({ x: rect.left + rect.width / 2, y: rect.top - 8, label: priority.label });
-              }}
-              onMouseLeave={() => setTooltip(null)}
-            >
-              <span className={`block w-2.5 h-2.5 rounded-full ${priority.color} ring-2 ${priority.ring}`} />
-            </div>
-          )}
-
           <div className="flex-1 min-w-0">
             {editing ? (
               <input
@@ -128,6 +128,24 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
             )}
             {card.description && (
               <p className="text-xs text-foreground-muted mt-1 line-clamp-3">{card.description}</p>
+            )}
+            {/* Priority dots — absolute bottom right */}
+            {indicators.length > 0 && (
+              <div className="absolute bottom-2 right-2 flex items-center gap-1">
+                {indicators.map((p, i) => (
+                  <div
+                    key={i}
+                    className="cursor-default"
+                    onMouseEnter={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setTooltip({ x: rect.left + rect.width / 2, y: rect.top - 6, label: p.label });
+                    }}
+                    onMouseLeave={() => setTooltip(null)}
+                  >
+                    <span className={`block w-2 h-2 rounded-full ${p.color} ring-1 ${p.ring}`} />
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 

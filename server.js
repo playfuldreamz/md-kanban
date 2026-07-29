@@ -55,27 +55,29 @@ const absFilePath = path.resolve(filePath);
 let boardState = { title: '', columns: [] };
 
 const FORMAT_GUIDE = `<!--
-  FORMAT — This file powers a live Kanban board (npx md-kanban).
+  This file powers a live Kanban board (npx md-kanban).
 
-  STRUCTURE (3 standard columns — anything else triggers conversion):
+  STRUCTURE:
     ## To Do
     ## In Progress
     ## Done
+  Non-standard columns trigger an auto-conversion prompt.
 
   CARD FORMAT:
-    - [ ] **Title** — Description
-    - [x] **Title** — Description   (x = done, shown with strikethrough)
+    - [ ] **Title** — Description with #tags
+    - [x] **Title** — Description   (x = done → strikethrough)
 
-  PRIORITY TAGS (render as colored dots on cards):
-    #critical  (red)    #important  (amber)    #polish  (green)
+  PRIORITY INDICATORS (render as colored dots, multiple allowed):
+    #critical (red)  #important (amber)  #polish (green)
+    Custom priorities via @priorities block below.
 
   RULES FOR AI AGENTS:
   • Every task MUST start with "- [ ]" or "- [x]" at the beginning of the line
   • Bold the title with **double asterisks**
-  • Use an em dash (—) before any description, details, or #tags
+  • Use an em dash (—) before description, details, and #tags
   • Only H2 (##) sections become columns — H3+ are ignored
   • Drag cards between columns to change status
-  • HTML comments like this block are invisible to the board
+  • This comment block is invisible to the board
 -->`;
 
 function readAndParse() {
