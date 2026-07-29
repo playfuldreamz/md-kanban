@@ -66,7 +66,7 @@ interface KanbanCardProps {
   onDelete: () => void;
   onEdit?: (cardId: string, title: string, description: string) => void;
   onToggleSubTask?: (parentId: string, childId: string) => void;
-  onAddSubTask?: (parentId: string, title: string) => void;
+  onAddSubTask?: (parentId: string, title: string, description?: string) => void;
   onDeleteSubTask?: (parentId: string, childId: string) => void;
   onDragStart?: () => void;
   onDragEnd?: () => void;
@@ -263,7 +263,7 @@ interface SubTaskSectionProps {
   open: boolean;
   onToggleOpen: (open: boolean) => void;
   onToggleSubTask?: (parentId: string, childId: string) => void;
-  onAddSubTask?: (parentId: string, title: string) => void;
+  onAddSubTask?: (parentId: string, title: string, description?: string) => void;
   onDeleteSubTask?: (parentId: string, childId: string) => void;
   depth: number;
 }
@@ -341,7 +341,7 @@ interface SubTaskItemProps {
   depth: number;
   canNest: boolean;
   onToggleSubTask?: (parentId: string, childId: string) => void;
-  onAddSubTask?: (parentId: string, title: string) => void;
+  onAddSubTask?: (parentId: string, title: string, description?: string) => void;
   onDeleteSubTask?: (parentId: string, childId: string) => void;
 }
 
@@ -459,16 +459,17 @@ function SubTaskItem({
   );
 }
 
-/** Inline "Add sub-task" input that appears below a list. */
+/** Inline "Add sub-task" input with optional description. */
 function AddSubTaskInline({
   parentId, onAdd, onAdded,
 }: {
   parentId: string;
-  onAdd: (parentId: string, title: string) => void;
+  onAdd: (parentId: string, title: string, description?: string) => void;
   onAdded: () => void;
 }) {
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState('');
+  const [desc, setDesc] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   if (!adding) {
@@ -486,43 +487,48 @@ function AddSubTaskInline({
     );
   }
 
+  const commit = () => {
+    const t = title.trim();
+    if (!t) { setAdding(false); return; }
+    const d = desc.trim() || undefined;
+    onAdd(parentId, t, d);
+    setTitle('');
+    setDesc('');
+    setAdding(false);
+    onAdded();
+  };
+
   return (
-    <div className="mt-1 flex items-center gap-1.5">
+    <div className="mt-1 space-y-1">
+      <div className="flex items-center gap-1.5">
+        <input
+          ref={inputRef}
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') { e.preventDefault(); commit(); }
+            if (e.key === 'Escape') { setTitle(''); setDesc(''); setAdding(false); }
+          }}
+          placeholder="Sub-task title..."
+          className="flex-1 text-xs bg-background border border-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          autoFocus
+        />
+        <Button variant="ghost" size="icon-sm" className="h-5 w-5" onClick={() => { setAdding(false); setTitle(''); setDesc(''); }}>
+          <X className="w-3 h-3" />
+        </Button>
+      </div>
       <input
-        ref={inputRef}
         type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        value={desc}
+        onChange={(e) => setDesc(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' && title.trim()) {
-            onAdd(parentId, title.trim());
-            setTitle('');
-            setAdding(false);
-            onAdded();
-          }
-          if (e.key === 'Escape') {
-            setTitle('');
-            setAdding(false);
-          }
+          if (e.key === 'Enter') { e.preventDefault(); commit(); }
+          if (e.key === 'Escape') { setTitle(''); setDesc(''); setAdding(false); }
         }}
-        onBlur={() => {
-          if (!title.trim()) {
-            setAdding(false);
-            setTitle('');
-          }
-        }}
-        placeholder="Sub-task title..."
-        className="flex-1 text-xs bg-background border border-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-        autoFocus
+        placeholder="Description (optional)..."
+        className="w-full text-[10px] bg-background border border-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
       />
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        className="h-5 w-5"
-        onClick={() => { setAdding(false); setTitle(''); }}
-      >
-        <X className="w-3 h-3" />
-      </Button>
     </div>
   );
 }

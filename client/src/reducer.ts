@@ -10,7 +10,7 @@ export type BoardAction =
   | { type: 'CARD_EDIT'; cardId: string; title: string; description: string }
   | { type: 'CARD_DELETE'; cardId: string }
   | { type: 'SUBTASK_TOGGLE'; parentId: string; childId: string }
-  | { type: 'SUBTASK_ADD'; parentId: string; title: string }
+  | { type: 'SUBTASK_ADD'; parentId: string; title: string; description?: string }
   | { type: 'SUBTASK_DELETE'; parentId: string; childId: string };
 
 // ─── Reducer ───────────────────────────────────────────────────────────────
@@ -136,12 +136,16 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
 
     case 'SUBTASK_ADD': {
       return mapCard(state, action.parentId, (card) => {
+        const desc = action.description || '';
+        const today = new Date().toISOString().slice(0, 10);
+        const descSuffix = desc ? ` — ${desc}` : '';
         const child: Card = {
           id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
           done: false,
           title: action.title,
-          description: '',
-          rawLine: `  - [ ] ${action.title}`,
+          description: desc,
+          rawLine: `  - [ ] ${action.title}${descSuffix} <!-- created:${today} -->`,
+          createdAt: today,
         };
         return {
           ...card,

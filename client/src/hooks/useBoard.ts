@@ -191,19 +191,23 @@ export function useBoard() {
     [board, apiBase],
   );
 
-  /** Add a sub-task to a card. */
+  /** Add a sub-task to a card, with optional description. */
   const addSubTask = useCallback(
-    async (parentId: string, title: string) => {
-      dispatch({ type: 'SUBTASK_ADD', parentId, title });
+    async (parentId: string, title: string, description?: string) => {
+      const desc = description || '';
+      dispatch({ type: 'SUBTASK_ADD', parentId, title, description: desc });
       try {
         const parent = findCard(board, parentId);
         if (parent) {
+          const today = new Date().toISOString().slice(0, 10);
+          const descSuffix = desc ? ` — ${desc}` : '';
           const newChild = {
             id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
             done: false,
             title: title.trim(),
-            description: '',
-            rawLine: `  - [ ] ${title.trim()}`,
+            description: desc,
+            rawLine: `  - [ ] ${title.trim()}${descSuffix} <!-- created:${today} -->`,
+            createdAt: today,
           };
           const updatedChildren = [...(parent.children || []), newChild];
           await fetch(`${apiBase}/api/cards/${parentId}`, {

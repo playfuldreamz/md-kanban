@@ -24,7 +24,7 @@ interface BoardShellProps {
   deleteColumn: (columnId: string) => void;
   undoDelete: () => void;
   toggleSubTask: (parentId: string, childId: string) => void;
-  addSubTask: (parentId: string, title: string) => void;
+  addSubTask: (parentId: string, title: string, description?: string) => void;
   deleteSubTask: (parentId: string, childId: string) => void;
 }
 

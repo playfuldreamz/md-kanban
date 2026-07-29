@@ -45,7 +45,7 @@ interface ColumnViewProps {
   onMove: (cardId: string, toColumnId: string, toIndex: number) => void;
   onDeleteColumn?: (columnId: string) => void;
   onToggleSubTask: (parentId: string, childId: string) => void;
-  onAddSubTask: (parentId: string, title: string) => void;
+  onAddSubTask: (parentId: string, title: string, description?: string) => void;
   onDeleteSubTask: (parentId: string, childId: string) => void;
   dragCardId: string | null;
   dragColumnId: string | null;

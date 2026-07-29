@@ -17,7 +17,7 @@ interface ColumnListProps {
   onAddColumn: (name: string) => void;
   onDeleteColumn: (columnId: string) => void;
   onToggleSubTask: (parentId: string, childId: string) => void;
-  onAddSubTask: (parentId: string, title: string) => void;
+  onAddSubTask: (parentId: string, title: string, description?: string) => void;
   onDeleteSubTask: (parentId: string, childId: string) => void;
   dragCardId: string | null;
   dragColumnId: string | null;
