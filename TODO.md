@@ -55,7 +55,9 @@
 
 
 ## In Progress
-- [ ] **Dark mode synced to OS preference** — Add prefers-color-scheme detection so initial theme matches OS. Manual toggle still overrides. Appica UI ThemeProvider already handles the dark class. #polish
+- [x] **Dark mode synced to OS preference** — Three-way theme toggle cycles system → light → dark. Appica UI ThemeProvider enableSystem already respects prefers-color-scheme by default. Manual override persists in localStorage; "system" option restores OS sync. #polish
+  - [x] **ThemeToggle** — changed from binary light/dark to three-way cycle (system → light → dark) with Monitor icon for system mode
+  - [x] **ThemeProvider** — enableSystem already defaults to true; no provider changes needed
 
 
 ## Done

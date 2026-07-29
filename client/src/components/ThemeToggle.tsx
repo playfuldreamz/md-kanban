@@ -2,28 +2,32 @@
 
 import { useTheme } from '@appica/ui-react/hooks/use-theme';
 import { Button } from '@appica/ui-react/button';
-import { SunHigh, MoonStars } from '@appica/icons-react';
+import { SunHigh, MoonStars, DeviceDesktop } from '@appica/icons-react';
 
+/** Three-way theme toggle: system → light → dark → system */
 export default function ThemeToggle() {
-  const { resolvedTheme, setTheme, mounted } = useTheme();
+  const { theme, setTheme, mounted } = useTheme();
 
   if (!mounted) {
     return <Button variant="ghost" size="icon-sm" aria-label="Toggle theme" />;
   }
 
-  const next = resolvedTheme === 'dark' ? 'light' : 'dark';
+  const next = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
+  const label = theme === 'system' ? 'System' : theme === 'light' ? 'Light' : 'Dark';
+  const icon =
+    theme === 'system' ? <DeviceDesktop className="w-4 h-4" /> :
+    theme === 'dark' ? <MoonStars className="w-4 h-4" /> :
+    <SunHigh className="w-4 h-4" />;
+
   return (
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label="Toggle theme"
+      aria-label={`Theme: ${label}. Click for ${next === 'system' ? 'system' : next} mode.`}
       onClick={() => setTheme(next)}
+      title={`${label} — click to switch`}
     >
-      {resolvedTheme === 'dark' ? (
-        <MoonStars className="w-4 h-4" />
-      ) : (
-        <SunHigh className="w-4 h-4" />
-      )}
+      {icon}
     </Button>
   );
 }

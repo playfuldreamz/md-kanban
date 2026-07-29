@@ -2,6 +2,11 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- docs: add sub-task syntax to TODO.md format guide
+  
+  FORMAT_GUIDE in lib/server-utils.js and project TODO.md preamble
+  now include sub-task nesting rules: 2-space indentation, - [ ] / - [x]
+  syntax, unlimited depth, 4 visual levels with progress badges.
 - docs: update README and AGENTS.md for sub-tasks + server refactor
   
   README.md:
