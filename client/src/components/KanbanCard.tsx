@@ -118,7 +118,6 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
           ${!editing && onDragStart ? 'cursor-grab active:cursor-grabbing' : ''}
         `}
         data-card-id={card.id}
-        title={card.createdAt ? formatCreatedDate(card.createdAt) : undefined}
         draggable={!editing && !!onDragStart}
         onDragStart={(e) => {
           if (editing) return;
@@ -155,22 +154,29 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
                 dangerouslySetInnerHTML={{ __html: renderInline(card.description) }}
               />
             )}
-            {/* Priority dots */}
-            {indicators.length > 0 && (
-              <div className="flex items-center gap-1 mt-1.5">
-                {indicators.map((p, i) => (
-                  <div
-                    key={i}
-                    className="cursor-default"
-                    onMouseEnter={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      setTooltip({ x: rect.left + rect.width / 2, y: rect.top - 6, label: p.label });
-                    }}
-                    onMouseLeave={() => setTooltip(null)}
-                  >
-                    <span className={`block w-2 h-2 rounded-full ${p.color} ring-1 ${p.ring}`} />
-                  </div>
-                ))}
+            {/* Priority dots + creation date */}
+            {(indicators.length > 0 || card.createdAt) && (
+              <div className="flex items-center justify-between mt-1.5 gap-2">
+                <div className="flex items-center gap-1">
+                  {indicators.map((p, i) => (
+                    <div
+                      key={i}
+                      className="cursor-default"
+                      onMouseEnter={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setTooltip({ x: rect.left + rect.width / 2, y: rect.top - 6, label: p.label });
+                      }}
+                      onMouseLeave={() => setTooltip(null)}
+                    >
+                      <span className={`block w-2 h-2 rounded-full ${p.color} ring-1 ${p.ring}`} />
+                    </div>
+                  ))}
+                </div>
+                {card.createdAt && (
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] text-foreground-subtle whitespace-nowrap">
+                    {formatCreatedDate(card.createdAt)}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -363,15 +369,12 @@ function SubTaskItem({
 
   const depthColor = depth >= 3 ? 'text-foreground-subtle' : depth >= 2 ? 'text-foreground-muted' : 'text-foreground';
 
-  const createdLabel = child.createdAt ? formatCreatedDate(child.createdAt) : undefined;
-
   return (
     <div>
       {/* Row: checkbox + expand chevron + title + delete */}
       <div
         className="group/child flex items-center gap-1.5 py-0.5"
         style={{ paddingLeft: `${depth * 4}px` }}
-        title={createdLabel}
       >
         {/* Expand chevron (if this child has its own children) */}
         {hasKids && canNest ? (
@@ -417,6 +420,11 @@ function SubTaskItem({
               className="text-[10px] text-foreground-muted mt-0.5 line-clamp-2"
               dangerouslySetInnerHTML={{ __html: renderInline(child.description) }}
             />
+          )}
+          {child.createdAt && (
+            <span className="opacity-0 group-hover/child:opacity-100 transition-opacity text-[9px] text-foreground-subtle mt-0.5 block">
+              {formatCreatedDate(child.createdAt)}
+            </span>
           )}
         </div>
         <Button

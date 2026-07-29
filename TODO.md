@@ -55,7 +55,6 @@
 ## In Progress
 
 
-
 ## Done
 - [x] **Search & filter** — Cmd+K / Ctrl+K command palette that filters all cards (including sub-tasks) by title, description, tag, or column. Results show column badge, priority tags, done status. Arrow keys navigate, Enter selects and scrolls to card with highlight. #critical
   - [x] **CommandPalette** — modal overlay with search input, flattened card list, highlight matching text, keyboard navigation

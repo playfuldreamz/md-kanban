@@ -2,6 +2,12 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: search button in header bar with Cmd+K/Ctrl+K shortcut hint
+  
+  Header now shows a search button with icon, label, and keyboard
+  shortcut badge (⌘K on Mac, Ctrl+K on Windows/Linux). Clicking it
+  opens the command palette. README updated with Search section
+  documenting the full interaction.
 - feat: Cmd+K command palette for searching all tasks
   
   CommandPalette component: modal overlay triggered by Cmd+K/Ctrl+K.
