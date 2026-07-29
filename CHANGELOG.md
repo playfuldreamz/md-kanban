@@ -2,6 +2,21 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- docs: update README and AGENTS.md for sub-tasks + server refactor
+  
+  README.md:
+  - Card interface now includes children?: Card[]
+  - What breaks parsing → added Sub-tasks section with nested example
+  - PUT /api/cards/:id now documents children field
+  - State Management lists all 9 reducer actions (incl. sub-task)
+  - Frontend Component Tree includes SubTaskSection/SubTaskItem/AddSubTaskInline
+  
+  AGENTS.md:
+  - Directory roadmap: added lib/routes.js, lib/server-utils.js;
+    removed stale types.js; added ConvertDialog, ThemeToggle, ToastNotifications
+  - Rule 5: updated from 6 to 9 action types
+  - Rule 7: server is now split across 3 files, all under 250 lines
+  - Component Patterns: added SubTaskItem (recursive) pattern with explicit parentId callbacks
 
 - fix: suppress EADDRINUSE error on WebSocketServer during port fallback
 
