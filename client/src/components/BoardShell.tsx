@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@appica/ui-react/badge';
 import { Skeleton } from '@appica/ui-react/skeleton';
 import { Alert } from '@appica/ui-react/alert';
@@ -20,21 +20,19 @@ interface BoardShellProps {
   moveCard: (cardId: string, toColumnId: string, toIndex: number) => void;
   deleteCard: (cardId: string) => void;
   editCard: (cardId: string, title: string, description: string) => void;
+  addColumn: (name: string) => void;
   undoDelete: () => void;
 }
 
 export default function BoardShell(props: BoardShellProps) {
-  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, undoDelete } = props;
+  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, addColumn, undoDelete } = props;
 
-  // Drag state
   const [dragCardId, setDragCardId] = useState<string | null>(null);
   const [dragColumnId, setDragColumnId] = useState<string | null>(null);
 
-  // Keyboard shortcut: 'n' to focus first add-task button
   useEffect(() => {
     if (loading || error) return;
     const handleKey = (e: KeyboardEvent) => {
-      // Don't intercept when typing in inputs or editing
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if ((e.target as HTMLElement)?.contentEditable === 'true') return;
       if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey) {
@@ -47,7 +45,6 @@ export default function BoardShell(props: BoardShellProps) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [loading, error]);
 
-  // ── Loading ──────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="h-screen flex flex-col bg-background">
@@ -68,7 +65,6 @@ export default function BoardShell(props: BoardShellProps) {
     );
   }
 
-  // ── Error ────────────────────────────────────────────────────────────
   if (error) {
     return (
       <div className="h-screen flex items-center justify-center bg-background p-8">
@@ -86,10 +82,8 @@ export default function BoardShell(props: BoardShellProps) {
     );
   }
 
-  // ── Board ────────────────────────────────────────────────────────────
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Header */}
       <header className="h-12 flex items-center justify-between px-4 border-b border-border bg-background/80 backdrop-blur-xl flex-shrink-0">
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-semibold text-foreground">
@@ -108,27 +102,30 @@ export default function BoardShell(props: BoardShellProps) {
         </div>
       </header>
 
-      {/* Columns */}
-      <ColumnList
-        columns={board.columns}
-        onToggle={toggleCard}
-        onDelete={deleteCard}
-        onAdd={addCard}
-        onEdit={editCard}
-        onMove={moveCard}
-        dragCardId={dragCardId}
-        dragColumnId={dragColumnId}
-        onDragStart={(cardId, columnId) => {
-          setDragCardId(cardId);
-          setDragColumnId(columnId);
-        }}
-        onDragEnd={() => {
-          setDragCardId(null);
-          setDragColumnId(null);
-        }}
-      />
+      <div className="flex-1 flex overflow-hidden">
+        <ColumnList
+          columns={board.columns}
+          showCompleted={true}
+          priorities={board.priorities}
+          onToggle={toggleCard}
+          onDelete={deleteCard}
+          onAdd={addCard}
+          onEdit={editCard}
+          onMove={moveCard}
+          onAddColumn={addColumn}
+          dragCardId={dragCardId}
+          dragColumnId={dragColumnId}
+          onDragStart={(cardId, columnId) => {
+            setDragCardId(cardId);
+            setDragColumnId(columnId);
+          }}
+          onDragEnd={() => {
+            setDragCardId(null);
+            setDragColumnId(null);
+          }}
+        />
+      </div>
 
-      {/* Toasts */}
       <ToastNotifications error={error} connected={connected} undoCard={undoCard} onUndo={undoDelete} />
     </div>
   );

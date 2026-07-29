@@ -3,6 +3,13 @@
 > Built on [Appica UI](https://appica.dev/ui/docs/react/installation). All components, tokens, and
 > patterns reference the Appica design system. See [llms.txt](https://appica.dev/llms.txt) and
 > [llms-full.txt](https://appica.dev/llms-full.txt) for the complete Appica UI reference.
+>
+> **CRITICAL: Before adding ANY new component, ALWAYS consult these references:**
+> - [Components](https://appica.dev/ui/components) — verify component exists and check API
+> - [Icons](https://appica.dev/ui/icons) — search for the correct icon name in `@appica/icons-react`
+> - [llms-full.txt](https://appica.dev/llms-full.txt) — full component API reference
+>
+> Never guess an icon name or component prop. Always look it up first.
 
 ---
 

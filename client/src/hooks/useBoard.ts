@@ -166,7 +166,46 @@ export function useBoard() {
     [apiBase],
   );
 
+  const addColumn = useCallback(
+    async (name: string) => {
+      try {
+        await fetch(`${apiBase}/api/columns`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name }),
+        });
+        // WebSocket sync will reconcile
+      } catch {
+        // WebSocket sync will reconcile
+      }
+    },
+    [apiBase],
+  );
+
+  // Check if board uses non-standard columns (not To Do / In Progress / Done)
+  const isStandard = (col: { id: string; name: string }) => {
+    const n = col.name.toLowerCase().replace(/^[^\w]*/, '');
+    const i = col.id.toLowerCase();
+    return i.includes('to-do') || n.includes('to do') ||
+      i.includes('progress') || n.includes('progress') ||
+      i.includes('done') || n.includes('done');
+  };
+  const needsConversion = !loading && board.columns.length > 0 &&
+    board.columns.some(c => !isStandard(c));
+
   const totalCards = board.columns.reduce((sum, c) => sum + c.cards.length, 0);
+
+  const convertBoard = useCallback(async () => {
+    try {
+      await fetch(`${apiBase}/api/convert`, { method: 'POST' });
+      // Fetch updated board immediately (WebSocket may lag)
+      const res = await fetch(`${apiBase}/api/board`);
+      const data: BoardState = await res.json();
+      dispatch({ type: 'BOARD_SYNC', board: data });
+    } catch {
+      // WebSocket sync will reconcile
+    }
+  }, [apiBase]);
 
   return {
     board,
@@ -181,6 +220,9 @@ export function useBoard() {
     deleteCard,
     editCard,
     undoDelete,
+    addColumn,
+    needsConversion,
+    convertBoard,
   };
 }
 

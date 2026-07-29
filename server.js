@@ -55,17 +55,26 @@ const absFilePath = path.resolve(filePath);
 let boardState = { title: '', columns: [] };
 
 const FORMAT_GUIDE = `<!--
-  FORMAT — This file is a live Kanban board (npx md-kanban) powered by plain Markdown.
+  FORMAT — This file powers a live Kanban board (npx md-kanban).
 
-  Columns  =  ## Column Name
-  Cards    =  - [ ] **Title** — Description
-             - [x] **Title** — Description   (x = done)
+  STRUCTURE (3 standard columns — anything else triggers conversion):
+    ## To Do
+    ## In Progress
+    ## Done
+
+  CARD FORMAT:
+    - [ ] **Title** — Description
+    - [x] **Title** — Description   (x = done, shown with strikethrough)
+
+  PRIORITY TAGS (render as colored dots on cards):
+    #critical  (red)    #important  (amber)    #polish  (green)
 
   RULES FOR AI AGENTS:
   • Every task MUST start with "- [ ]" or "- [x]" at the beginning of the line
   • Bold the title with **double asterisks**
-  • Use an em dash (—) before any description or details
+  • Use an em dash (—) before any description, details, or #tags
   • Only H2 (##) sections become columns — H3+ are ignored
+  • Drag cards between columns to change status
   • HTML comments like this block are invisible to the board
 -->`;
 
@@ -76,8 +85,13 @@ function readAndParse() {
 
 # TODO
 
-## 📋 Tasks
-- [ ] **Try me** — Click the checkbox, drag cards between columns, or edit this file directly.\n`;
+## To Do
+- [ ] **Welcome to md-kanban** — Drag cards between columns to track progress. Add #critical, #important, or #polish tags for priority indicators.
+
+## In Progress
+
+## Done
+`;
     fs.writeFileSync(absFilePath, starter, 'utf-8');
     boardState = parseMarkdown(starter);
     return;
@@ -261,6 +275,96 @@ app.delete('/api/cards/:id', (req, res) => {
     found.column.cards.splice(found.index, 1);
     writeBoard(boardState);
     readAndParse();
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** POST /api/columns — Add a new column. Body: { name } */
+app.post('/api/columns', (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ error: 'name is required' });
+    }
+    const id = name.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || 'untitled';
+    boardState.columns.push({
+      id,
+      name: name.trim(),
+      emoji: null,
+      cards: [],
+    });
+    writeBoard(boardState);
+    readAndParse();
+    res.status(201).json({ id, name: name.trim() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** POST /api/convert — Convert any TODO.md to standard workflow columns. */
+app.post('/api/convert', (req, res) => {
+  try {
+    // Detect priority from original column names and tag cards accordingly
+    const priorityKeywords = {
+      critical: '#critical', urgent: '#critical', blocker: '#critical',
+      important: '#important', high: '#important', priority: '#important',
+      polish: '#polish', nice: '#polish', low: '#polish', later: '#polish', backlog: '#polish',
+    };
+
+    const allCards = boardState.columns.flatMap(col => {
+      const colLower = col.name.toLowerCase();
+      let priorityTag = '';
+      for (const [kw, tag] of Object.entries(priorityKeywords)) {
+        if (colLower.includes(kw)) { priorityTag = tag; break; }
+      }
+      return col.cards.map(card => {
+        if (!priorityTag) return card;
+        // Only tag if not already tagged
+        if (card.description && card.description.includes(priorityTag)) return card;
+        card.description = card.description
+          ? card.description + ' ' + priorityTag
+          : priorityTag;
+        card._changed = true;
+        return card;
+      });
+    });
+
+    const doneCards = allCards.filter(c => c.done);
+    const activeCards = allCards.filter(c => !c.done);
+
+    // Build new state
+    boardState = {
+      title: boardState.title,
+      preamble: boardState.preamble || '',
+      priorities: boardState.priorities || {},
+      columns: [
+        { id: 'to-do', name: 'To Do', emoji: null, cards: activeCards },
+        { id: 'in-progress', name: 'In Progress', emoji: null, cards: [] },
+        { id: 'done', name: 'Done', emoji: null, cards: doneCards },
+      ],
+    };
+
+    // Write once — no readAndParse (avoids double-write race)
+    writeBoard(boardState);
+    broadcast(boardState);
+    res.json({ ok: true, columns: 3, cards: allCards.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** PUT /api/priorities — Update custom priority indicators. Body: { priorities: {...} } */
+app.put('/api/priorities', (req, res) => {
+  try {
+    const { priorities } = req.body;
+    if (!priorities || typeof priorities !== 'object') {
+      return res.status(400).json({ error: 'priorities object is required' });
+    }
+    boardState.priorities = priorities;
+    writeBoard(boardState);
+    broadcast(boardState);
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

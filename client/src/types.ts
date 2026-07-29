@@ -18,6 +18,8 @@ export interface Column {
 
 export interface BoardState {
   title: string;
+  preamble?: string;
+  priorities?: Record<string, { label: string; color: string; ring: string }>;
   columns: Column[];
 }
 

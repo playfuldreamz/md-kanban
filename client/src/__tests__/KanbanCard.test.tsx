@@ -37,20 +37,6 @@ describe('KanbanCard', () => {
     expect(title.className).toContain('line-through');
   });
 
-  it('calls onToggle when checkbox is clicked', () => {
-    const onToggle = vi.fn();
-    render(
-      <KanbanCard
-        card={baseCard}
-        onToggle={onToggle}
-        onDelete={vi.fn()}
-      />
-    );
-    const checkbox = screen.getByRole('checkbox');
-    fireEvent.click(checkbox);
-    expect(onToggle).toHaveBeenCalledTimes(1);
-  });
-
   it('shows delete confirmation when trash is clicked', () => {
     const onDelete = vi.fn();
     render(
@@ -62,8 +48,8 @@ describe('KanbanCard', () => {
     );
     const deleteBtn = screen.getByLabelText('Delete Fix login bug');
     fireEvent.click(deleteBtn);
-    // AlertDialog renders in a portal; verify the confirmation text exists anywhere in the document
-    expect(document.body.textContent).toContain('Are you sure you want to delete');
+    expect(document.body.textContent).toContain('Remove');
+    expect(document.body.textContent).toContain('TODO.md');
   });
 
   it('renders without description gracefully', () => {

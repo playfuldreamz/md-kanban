@@ -1,4 +1,4 @@
-import type { BoardState, Card, Column } from './types';
+import type { BoardState, Card } from './types';
 
 // ─── Action types ──────────────────────────────────────────────────────────
 
