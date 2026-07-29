@@ -46,7 +46,7 @@
 - [ ] **Export** — GET /api/board/export?format=json|csv. CSV for spreadsheet users. Optional static HTML export for sharing a snapshot. #polish
 - [ ] **Virtual scrolling for large boards** — Wrap card list in a virtualized container for 100+ card boards. Check if Appica UI ships a virtual list component first. #polish
 - [ ] **Git integration (opt-in)** — --git flag that auto-commits TODO.md changes with meaningful messages (kanban-md: moved "Fix login" → In Progress). Respects user's git config. Off by default. #polish
-- [ ] **Card creation date** — Track when a card was created via HTML comment in rawLine: <!-- created:2026-07-28 -->. Parser ignores HTML comments so they survive round-trips. UI shows "Added 3 days ago" on hover. #polish
+
 - [ ] **Column WIP limits** — Per-column Work-In-Progress limits (e.g. "In Progress" max 5). Column header turns amber when exceeded. Configured via @wip block in preamble. #polish
 - [ ] **Server-side TypeScript** — The "vanilla Node.js" rule should be revisited once the codebase stabilizes. JSDoc types are already in use; adopting TS would improve editor support and catch bugs. #polish
 - [ ] **E2E tests with Playwright** — Browser-based tests: open board → drag card → verify file on disk → verify WebSocket sync. Current test suite is solid (79 tests) but has no browser automation. #polish
@@ -54,6 +54,13 @@
 
 
 ## In Progress
+- [ ] **Card creation date** — Track when a card was created via HTML comment in rawLine. Parser ignores HTML comments so they survive round-trips. UI shows "Created 3 days ago" on hover. #polish
+  - [x] **Parser** — extract createdAt from <!-- created:YYYY-MM-DD --> comment, strip from description
+  - [x] **Writer** — append createdAt comment when serializing changed cards
+  - [x] **Server** — createCard auto-stamps today's date on new cards
+  - [x] **Types** — added createdAt?: string to Card interface
+  - [x] **UI** — formatCreatedDate() shows relative dates, native tooltip on hover
+  - [x] **Tests** — 3 parser tests (extraction, missing, no desc), 2 writer tests (round-trip, changed)
 
 
 ## Done

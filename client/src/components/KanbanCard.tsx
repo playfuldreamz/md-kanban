@@ -22,6 +22,21 @@ const PRIORITY_MAP: Record<string, { label: string; color: string; ring: string 
   polish: { label: 'Polish', color: 'bg-emerald-500', ring: 'ring-emerald-500/30' },
 };
 
+/** Format an ISO date string to a human-readable relative or absolute date. */
+function formatCreatedDate(iso: string): string {
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return '';
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / 86400000);
+  if (diffDays === 0) return 'Created today';
+  if (diffDays === 1) return 'Created yesterday';
+  if (diffDays < 7) return `Created ${diffDays} days ago`;
+  if (diffDays < 30) return `Created ${Math.floor(diffDays / 7)}w ago`;
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `Created ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+}
+
 function extractPriorities(text: string, priorities?: Record<string, { label: string; color: string; ring: string }>): { label: string; color: string; ring: string }[] {
   const map = priorities || PRIORITY_MAP;
   const results: { label: string; color: string; ring: string }[] = [];
@@ -102,6 +117,7 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
           ${!editing && onDragStart ? 'cursor-grab active:cursor-grabbing' : ''}
         `}
         data-card-id={card.id}
+        title={card.createdAt ? formatCreatedDate(card.createdAt) : undefined}
         draggable={!editing && !!onDragStart}
         onDragStart={(e) => {
           if (editing) return;
@@ -341,12 +357,15 @@ function SubTaskItem({
 
   const depthColor = depth >= 3 ? 'text-foreground-subtle' : depth >= 2 ? 'text-foreground-muted' : 'text-foreground';
 
+  const createdLabel = child.createdAt ? formatCreatedDate(child.createdAt) : undefined;
+
   return (
     <div>
       {/* Row: checkbox + expand chevron + title + delete */}
       <div
         className="group/child flex items-center gap-1.5 py-0.5"
         style={{ paddingLeft: `${depth * 4}px` }}
+        title={createdLabel}
       >
         {/* Expand chevron (if this child has its own children) */}
         {hasKids && canNest ? (

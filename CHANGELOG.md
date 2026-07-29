@@ -2,6 +2,15 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- fix: sub-task descriptions now render with markdown, smaller sizing
+  
+  SubTaskItem now shows child.description (if present) below the title,
+  using the same renderInline() markdown converter. Description text is
+  text-[10px] (smaller than the card's text-xs description) with
+  line-clamp-2 to keep sub-task rows compact.
+  
+  Title+description are wrapped in a flex-1 min-w-0 container so
+  truncation works properly alongside the delete button.
 - feat: inline markdown rendering in card descriptions
   
   New lib/markdown.ts: renderInline() converts **bold**, *italic*,
