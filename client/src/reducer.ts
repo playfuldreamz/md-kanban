@@ -31,6 +31,9 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
     case 'CARD_MOVE': {
       // Find card and remove from source
       let movedCard: Card | null = null;
+      const sourceColumn = state.columns.find((col) =>
+        col.cards.some((c) => c.id === action.cardId),
+      );
       const stripped = state.columns.map((col) => {
         const idx = col.cards.findIndex((c) => c.id === action.cardId);
         if (idx !== -1) {
@@ -41,6 +44,16 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
       });
 
       if (!movedCard) return state;
+
+      // Auto-complete when moving to Done, auto-reopen when moving out
+      const targetColumn = state.columns.find((c) => c.id === action.toColumnId);
+      const toDone = isDoneColumn(targetColumn);
+      const fromDone = isDoneColumn(sourceColumn);
+      if (toDone && !fromDone) {
+        movedCard = setDoneRecursive(movedCard, true);
+      } else if (!toDone && fromDone) {
+        movedCard = setDoneRecursive(movedCard, false);
+      }
 
       // Insert into target
       return {
@@ -154,6 +167,24 @@ function mapCardsInList(cards: Card[], cardId: string, fn: (card: Card) => Card)
     }
     return card;
   });
+}
+
+/** Check if a column is the Done column (by id or name). */
+function isDoneColumn(col: { id: string; name: string } | undefined): boolean {
+  if (!col) return false;
+  const id = col.id.toLowerCase();
+  const name = col.name.toLowerCase();
+  return id === 'done' || id.includes('done') || name.includes('done');
+}
+
+/** Recursively set done state on a card and all its children. */
+function setDoneRecursive(card: Card, done: boolean): Card {
+  return {
+    ...card,
+    done,
+    _changed: true,
+    children: card.children?.map((c) => setDoneRecursive(c, done)),
+  };
 }
 
 export const initialBoard: BoardState = {

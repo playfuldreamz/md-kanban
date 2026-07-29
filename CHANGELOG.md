@@ -2,6 +2,20 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: three-way theme toggle with OS preference sync
+  
+  ThemeToggle now cycles system → light → dark instead of binary
+  light/dark. Uses Appica UI ThemeProvider's built-in enableSystem
+  (default true) which respects prefers-color-scheme on first visit.
+  
+  - System mode: follows OS, DeviceDesktop icon
+  - Light mode: SunHigh icon
+  - Dark mode: MoonStars icon
+  - Manual override persists in localStorage; choosing 'system'
+    restores OS sync
+  
+  No ThemeProvider changes needed — enableSystem already defaults
+  to true.
 - docs: add sub-task syntax to TODO.md format guide
   
   FORMAT_GUIDE in lib/server-utils.js and project TODO.md preamble
