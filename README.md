@@ -275,7 +275,8 @@ Server pushes `{ type: "sync", board: BoardState }` on every file change or API 
 ```
 <App>
   <ThemeProvider>                 ← Appica UI dark mode
-    <BoardShell>                  ← chrome: header, column count, add-column
+    <BoardShell>                  ← chrome: header, search, column count
+      <CommandPalette />          ← Cmd+K search across all tasks
       <ColumnList>                ← horizontal flex, overflow-x-auto
         <Column>                  ← Appica UI Card with header
           <ColumnHeader>          ← emoji + name + card count badge
@@ -325,7 +326,12 @@ No state library. A single `useReducer` in `BoardShell` holds the full board sta
 - `CARD_DELETE` — optimistic removal
 - `SUBTASK_TOGGLE` — toggle a sub-task's done state
 - `SUBTASK_ADD` — add a sub-task to a card
+- `SUBTASK_EDIT` — edit a sub-task's title and description
 - `SUBTASK_DELETE` — remove a sub-task
+
+### Search
+
+Press **Cmd+K** (macOS) or **Ctrl+K** (Windows/Linux) to open the command palette. Type to filter all cards — including sub-tasks — by title, description, tag (`#critical`), or column name. Arrow keys navigate results; Enter scrolls to and briefly highlights the selected card. Escape or click-outside dismisses. A search button with the shortcut hint is also available in the header bar.
 
 Every optimistic action fires an API call. The WebSocket sync that follows acts as the "truth reconciliation" step.
 

@@ -2,6 +2,17 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: Cmd+K command palette for searching all tasks
+  
+  CommandPalette component: modal overlay triggered by Cmd+K/Ctrl+K.
+  Flattens all cards and sub-tasks into a searchable list. Filters by
+  title, description, tag, and column name. Highlights matching text.
+  
+  Results show column name badge, priority tags, and done status.
+  Arrow keys navigate, Enter selects and scrolls to the card with a
+  brief ring highlight animation. Escape or click-outside closes.
+  
+  Pure client-side — no API changes. All data from existing board state.
 - feat: edit existing sub-tasks (title + description) via pencil icon
   
   SubTaskItem rows now show a hover-revealed pencil icon that opens

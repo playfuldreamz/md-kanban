@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Badge } from '@appica/ui-react/badge';
 import { Skeleton } from '@appica/ui-react/skeleton';
 import { Alert } from '@appica/ui-react/alert';
-import { AlertTriangle, Loader } from '@appica/icons-react';
+import { AlertTriangle, Loader, Search } from '@appica/icons-react';
 import type { BoardState, Card } from '../types';
 import ThemeToggle from './ThemeToggle';
 import ColumnList from './ColumnList';
@@ -113,6 +113,16 @@ export default function BoardShell(props: BoardShellProps) {
           <Badge variant="secondary">{totalCards} tasks</Badge>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPaletteOpen(true)}
+            className="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors border border-border rounded-md px-2 py-1"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Search</span>
+            <kbd className="hidden sm:inline text-[10px] bg-background-muted rounded px-1 py-px border border-border-muted ml-1">
+              {navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'}
+            </kbd>
+          </button>
           {!connected && (
             <span className="flex items-center gap-1 text-xs text-foreground-muted">
               <Loader className="w-3 h-3 animate-spin" />
