@@ -381,11 +381,19 @@ function SubTaskItem({
           className={`h-3.5 w-3.5 flex-shrink-0 ${depth >= 3 ? 'opacity-60' : ''}`}
           aria-label={`Toggle ${child.title}`}
         />
-        <span
-          className={`text-xs flex-1 truncate ${child.done ? 'line-through text-foreground-muted' : depthColor}`}
-        >
-          {child.title}
-        </span>
+        <div className="flex-1 min-w-0">
+          <span
+            className={`text-xs truncate block ${child.done ? 'line-through text-foreground-muted' : depthColor}`}
+          >
+            {child.title}
+          </span>
+          {child.description && (
+            <p
+              className="text-[10px] text-foreground-muted mt-0.5 line-clamp-2"
+              dangerouslySetInnerHTML={{ __html: renderInline(child.description) }}
+            />
+          )}
+        </div>
         <Button
           variant="ghost"
           size="icon-sm"

@@ -2,6 +2,17 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: inline markdown rendering in card descriptions
+  
+  New lib/markdown.ts: renderInline() converts **bold**, *italic*,
+  \`code\`, and [links](url) to safe HTML. Escapes raw HTML first so
+  user input is never interpreted as markup.
+  
+  KanbanCard now renders descriptions via dangerouslySetInnerHTML
+  with the sanitized output, with Tailwind styles on the generated
+  <code>, <a>, <strong>, and <em> tags.
+  
+  8 new tests (lib/markdown.test.ts). 28 total tests, all green.
 - fix: move completed 'Dark mode' card from In Progress to Done column
   
   A checked card ([x]) in a non-Done column violates the Kanban convention.
