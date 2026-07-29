@@ -37,7 +37,6 @@
 - [ ] **Due dates** — Parse due dates from card text (due:YYYY-MM-DD or 📅 YYYY-MM-DD) and show visual indicators. Overdue cards get a red badge. A "Due Soon" filter in the search palette. #critical
 - [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
 - [ ] **Search & filter** — Cmd+K command palette that filters cards across all columns by title, description, or tag. Filters: done, not done, critical only, due this week, by assignee. #critical
-- [ ] **Markdown rendering in descriptions** — Render inline markdown in card descriptions: [links](url), `code`, *italic*, **bold**. Zero format change — TODO.md is already markdown. #critical
 - [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical
 - [ ] **Undo/redo stack** — Ring buffer of ~20 board states. Ctrl+Z / Ctrl+Shift+Z step through history. Protects against accidental drags, edits, and deletes. Extends the existing delete-undo toast. #important
 - [ ] **Card labels / tag system beyond priority** — Any #tag in a description renders as a colored badge. User-defined colors via the @priorities block in the preamble. Unlocks #bug, #feature, #docs, #frontend, #backend. #important
@@ -56,7 +55,12 @@
 
 ## In Progress
 
+
 ## Done
+- [x] **Markdown rendering in descriptions** — Render inline markdown in card descriptions: [links](url), `code`, *italic*, **bold**. Zero format change — TODO.md is already markdown. #critical
+  - [x] **renderInline()** — tiny markdown→HTML converter: bold, italic, code, links. Escape-then-render — safe by construction.
+  - [x] **KanbanCard** — swap plain text `<p>` for rendered HTML via dangerouslySetInnerHTML
+  - [x] **Tests** — 8 test cases: bold, italic, code, links, HTML escaping, mixed, plain, empty
 - [x] **Sub-tasks (nested checkboxes)** — Indented - [ ] lines parse as children of parent cards. Render as collapsible list with progress badge (2/5). Unlimited nesting depth in data model; UI renders up to 4 visual levels. #critical
   - [x] **Parser** — indent-level tracking via cardStack, recursive resolveDuplicateIds
   - [x] **Writer** — recursive serializeCard with indentation, cardHasChanged handles indented rawLines

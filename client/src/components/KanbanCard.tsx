@@ -13,6 +13,7 @@ import {
   AlertDialogClose,
 } from '@appica/ui-react/alert-dialog';
 import EditCardDialog from './EditCardDialog';
+import { renderInline } from '../lib/markdown';
 import type { Card } from '../types';
 
 const PRIORITY_MAP: Record<string, { label: string; color: string; ring: string }> = {
@@ -132,7 +133,10 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
               </p>
             )}
             {card.description && (
-              <p className="text-xs text-foreground-muted mt-1 line-clamp-3">{card.description}</p>
+              <p
+                className="text-xs text-foreground-muted mt-1 line-clamp-3"
+                dangerouslySetInnerHTML={{ __html: renderInline(card.description) }}
+              />
             )}
             {/* Priority dots */}
             {indicators.length > 0 && (

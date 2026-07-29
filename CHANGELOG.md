@@ -2,6 +2,28 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- fix: move completed 'Dark mode' card from In Progress to Done column
+  
+  A checked card ([x]) in a non-Done column violates the Kanban convention.
+  The auto-done-on-move feature only triggers on drag; direct file edits
+  still need to place done cards in the correct column.
+- feat: full symmetry between check and drag for Done column
+  
+  Three layers of protection against cards in wrong columns:
+  
+  1. File validation on startup (server-utils.js): validateBoardColumns()
+     auto-corrects any misplacement — [x] in non-Done → Done, [ ] in
+     Done → first non-Done column. Rewrites the corrected file to disk.
+  
+  2. Auto-move on check/uncheck (reducer + server): toggling a top-level
+     card's checkbox in a non-Done column auto-moves it to Done. Unchecking
+     in Done auto-moves it out. Sub-tasks are exempt — they stay nested.
+  
+  3. Auto-check/uncheck on drag (existing): dragging to Done checks all,
+     dragging out unchecks all. Sub-tasks follow their parent.
+  
+  The file is always the source of truth — any inconsistency (manual
+  file edit, git merge, AI writing) is corrected on the next read.
 - feat: auto-complete/reopen when moving cards to/from Done column
   
   Dragging a card (and all its sub-tasks) to the Done column now
