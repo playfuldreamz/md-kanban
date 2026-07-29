@@ -31,11 +31,12 @@
 
 ```
 kanban-md/
-  server.js              # Express + WebSocket + chokidar — the CLI entry point
+  server.js              # CLI entry — Express + WebSocket + chokidar (~200 lines)
   lib/
-    parser.js            # TODO.md → BoardState
-    writer.js            # BoardState → TODO.md
-    types.js             # JSDoc type definitions
+    parser.js            # TODO.md → BoardState (with sub-task nesting)
+    writer.js            # BoardState → TODO.md (with recursive child serialization)
+    routes.js            # Express route handlers (REST API)
+    server-utils.js      # Shared utilities: card lookup, file I/O, format guide
   client/
     index.html           # Vite entry
     vite.config.ts
@@ -43,18 +44,20 @@ kanban-md/
     src/
       main.tsx           # React root
       App.tsx            # ThemeProvider + BoardShell
-      reducer.ts         # useReducer state machine
+      reducer.ts         # useReducer state machine (9 action types)
       components/
         BoardShell.tsx    # Layout chrome
         ColumnList.tsx    # Horizontal scroll container
         Column.tsx        # One Kanban column
-        KanbanCard.tsx    # One task card
+        KanbanCard.tsx    # Card + recursive SubTaskItem/SubTaskSection
         AddCardForm.tsx   # Inline add at column bottom
-        EditCardDialog.tsx # Edit title/description
+        EditCardDialog.tsx # Edit title/description/priorities
+        ConvertDialog.tsx # Convert non-standard columns to workflow
+        ThemeToggle.tsx   # Dark/light mode toggle
+        ToastNotifications.tsx # Connection status + undo toast
       hooks/
-        useBoard.ts       # Board state + WebSocket sync
+        useBoard.ts       # Board state + WebSocket sync + all mutations
         useWebSocket.ts   # WebSocket connection management
-        useTodoApi.ts     # REST API calls
   README.md              # Architecture specification (this is the spec, not user docs)
   PLAN.md                # Phase checklist
   AGENTS.md              # This file
@@ -109,13 +112,16 @@ Every visible element uses Appica UI components. No raw `<button>`, no raw `<inp
 
 ### 5. No state library
 
-A single `useReducer` in `BoardShell` holds all state. No Redux, Zustand, Jotai, or Context for board state. The reducer handles 6 action types:
+A single `useReducer` in `BoardShell` holds all state. No Redux, Zustand, Jotai, or Context for board state. The reducer handles 9 action types:
 - `BOARD_SYNC` — replace entire state
 - `CARD_TOGGLE` — flip done
 - `CARD_MOVE` — reposition
 - `CARD_ADD` — new card at column end
 - `CARD_EDIT` — update title/description
 - `CARD_DELETE` — remove
+- `SUBTASK_TOGGLE` — toggle a child's done state
+- `SUBTASK_ADD` — add a child to a card
+- `SUBTASK_DELETE` — remove a child
 
 ### 6. Dragging uses HTML5 DnD, not a library
 
@@ -123,7 +129,7 @@ No `@dnd-kit`, no `react-beautiful-dnd`. HTML5 Drag and Drop API is sufficient f
 
 ### 7. The server is vanilla Node.js
 
-No TypeScript on the server side. The server is small enough (~200 lines) that types don't add value. Use JSDoc comments for editor intellisense. The client is TypeScript because React components benefit from prop types.
+No TypeScript on the server side. The server is split across three files (`server.js`, `lib/routes.js`, `lib/server-utils.js`), all under 250 lines each. Use JSDoc comments for editor intellisense. The client is TypeScript because React components benefit from prop types.
 
 ### 8. Tests for parser are mandatory
 
@@ -189,6 +195,24 @@ This directory must be self-contained. It cannot import from `../../backend/` or
   </form>
 </div>
 ```
+
+### SubTaskItem (recursive)
+
+Each `SubTaskItem` renders a checkbox + title row. If the item has children, it shows a chevron with a progress badge. Expanding reveals a nested `SubTaskSection` which renders more `SubTaskItem`s recursively. An `AddSubTaskInline` input appears at every nestable level (up to 4 visual levels deep).
+
+```tsx
+<SubTaskItem
+  child={child}
+  parentId={child.id}
+  depth={1}
+  canNest={true}
+  onToggleSubTask={(parentId, childId) => dispatch(...)}
+  onAddSubTask={(parentId, title) => dispatch(...)}
+  onDeleteSubTask={(parentId, childId) => dispatch(...)}
+/>
+```
+
+Callbacks take explicit `parentId` so intermediate children can be parents for their own sub-tasks. The reducer's `mapCard` is recursive — it finds cards at any depth in the tree.
 
 ## Anti-patterns
 

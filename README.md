@@ -89,7 +89,8 @@ kanban-md bridges the gap: the file stays a plain Markdown file (git-friendly, e
 │    done: boolean,                                 │
 │    title: string,        // **bold** text         │
 │    description: string,  // after —               │
-│    rawLine: string       // original markdown line│
+│    rawLine: string,      // original markdown line│
+│    children?: Card[],    // nested sub-tasks       │
 │  }                                                │
 └──────────────────────────────────────────────────┘
        │
@@ -135,11 +136,12 @@ interface Column {
 }
 
 interface Card {
-  id: string;               // stable hash: md5(title + column) for drag tracking
+  id: string;               // stable hash: djb2(title + column) for drag tracking
   done: boolean;            // - [x] vs - [ ]
   title: string;            // text inside **...**, or first sentence
   description: string;      // text after — (em dash), or empty
   rawLine: string;          // the original line, preserved for round-trip fidelity
+  children?: Card[];        // recursively nested sub-tasks (indented checkboxes)
 }
 ```
 
@@ -191,7 +193,16 @@ The parser enforces a lightweight schema. Files that don't match get a clear err
 
 - Using `###` (H3) for columns — only H2s create columns
 - Cards outside any H2 section — they're collected under an "Uncategorized" column
-- Nested checkboxes (`  - [ ]`) — ignored in v1, planned for sub-tasks in v2
+
+### Sub-tasks
+
+Indented checkboxes (`  - [ ]`) become nested sub-tasks. Unlimited depth in the data model; the UI renders up to 4 visual levels with collapsible progress badges (e.g. "▾ 2/5").
+
+```markdown
+- [ ] **Auth system** — OAuth + JWT
+  - [x] Google provider
+  - [ ] GitHub provider
+```
 
 ### Round-trip fidelity
 
@@ -238,9 +249,9 @@ Add a card to a column.
 **Response 201:** The created card object.
 
 ### `PUT /api/cards/:id`
-Update a card's title, description, and/or done state.
+Update a card's title, description, done state, and/or children.
 
-**Body:** `{ "title": "...", "description": "...", "done": true }`  
+**Body:** `{ "title": "...", "description": "...", "done": true, "children": [...] }`  
 **Response 200:** The updated card object.
 
 ### `PUT /api/cards/:id/move`
@@ -274,6 +285,12 @@ Server pushes `{ type: "sync", board: BoardState }` on every file change or API 
             <KanbanCard>          ← Appica UI Card variant
               <Checkbox />        ← Appica UI Checkbox
               <Button />          ← Appica UI ghost button (edit/delete)
+              <SubTaskSection>    ← collapsible sub-task list + progress badge
+                <SubTaskItem>     ← recursive: checkbox + title + delete
+                  <SubTaskSection />  ← nested children (up to 4 levels)
+                </SubTaskItem>
+                <AddSubTaskInline />  ← inline input at each nestable level
+              </SubTaskSection>
             </KanbanCard>
           </SortableCardList>
           <AddCardForm>           ← inline form at column bottom
@@ -306,6 +323,9 @@ No state library. A single `useReducer` in `BoardShell` holds the full board sta
 - `CARD_ADD` — optimistic new card
 - `CARD_EDIT` — optimistic title/description edit
 - `CARD_DELETE` — optimistic removal
+- `SUBTASK_TOGGLE` — toggle a sub-task's done state
+- `SUBTASK_ADD` — add a sub-task to a card
+- `SUBTASK_DELETE` — remove a sub-task
 
 Every optimistic action fires an API call. The WebSocket sync that follows acts as the "truth reconciliation" step.
 

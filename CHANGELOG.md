@@ -1,5 +1,14 @@
 # Changelog
 
+## [Session] — 2026-07-29
+<!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+
+- fix: suppress EADDRINUSE error on WebSocketServer during port fallback
+
+When the HTTP server's listen fails with EADDRINUSE, the attached
+WebSocketServer also emits an error. Without a handler, Node crashes
+before the fallback loop can try the next port.
+
 ## [Session] — 2026-07-28
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-28T18-38-01-831Z_019faa04-fe67-7683-91b5-4e9cf2d5cfe2.jsonl -->
 - Add delete button for custom columns, cards move to To Do on delete

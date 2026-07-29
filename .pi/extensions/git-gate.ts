@@ -148,6 +148,14 @@ export default function (pi: ExtensionAPI) {
 
 // ── changelog helpers ──
 
+/** Format a commit message as an indented markdown bullet.
+ *  First line gets "- " prefix, continuation lines get "  " indent
+ *  so they stay inside the bullet in markdown rendering. */
+function formatBullet(message: string): string {
+  const lines = message.split("\n");
+  return lines.map((line, i) => (i === 0 ? `- ${line}` : `  ${line}`)).join("\n");
+}
+
 function updateChangelog(filePath: string, sid: string, messages: string[]): void {
   const marker = `<!-- pi-session: ${sid} -->`;
   let content: string;
@@ -158,13 +166,13 @@ function updateChangelog(filePath: string, sid: string, messages: string[]): voi
   }
 
   if (content.includes(marker)) {
-    const bullets = messages.map((m) => `- ${m}`).join("\n");
+    const bullets = messages.map(formatBullet).join("\n");
     const idx = content.indexOf(marker);
     const ins = content.indexOf("\n", idx);
     content = content.slice(0, ins + 1) + bullets + "\n" + content.slice(ins + 1);
   } else {
     const today = new Date().toISOString().split("T")[0];
-    const bullets = messages.map((m) => `- ${m}`).join("\n");
+    const bullets = messages.map(formatBullet).join("\n");
     const section = ["", `## [Session] — ${today}`, marker, "", bullets, ""].join("\n");
     const nl = content.indexOf("\n");
     content =
