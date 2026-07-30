@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from '@appica/ui-react/button';
 import { Trash, Pencil, Pinned, Pin } from '@appica/icons-react';
 import {
@@ -20,6 +20,7 @@ import type { Card } from '../types';
 interface KanbanCardProps {
   card: Card;
   isDragging?: boolean;
+  isJustDropped?: boolean;
   columnName?: string;
   priorities?: Record<string, { label: string; color: string; ring: string }>;
   onToggle: () => void;
@@ -35,7 +36,7 @@ interface KanbanCardProps {
   onDragEnd?: () => void;
 }
 
-export default function KanbanCard({ card, isDragging, columnName, priorities, onToggle, onDelete, onEdit, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, boardAssignees, onTogglePin, onDragStart, onDragEnd }: KanbanCardProps) {
+export default function KanbanCard({ card, isDragging, isJustDropped, columnName, priorities, onToggle, onDelete, onEdit, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, boardAssignees, onTogglePin, onDragStart, onDragEnd }: KanbanCardProps) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -78,10 +79,21 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
           ${card.done ? 'border-border-muted opacity-75' : 'border-border'}
           ${card.warning ? 'border-l-2 border-l-amber-500' : ''}
           ${isDragging ? 'opacity-50 scale-95 shadow-lg rotate-[0.5deg]' : ''}
+          ${isJustDropped ? 'ring-2 ring-emerald-400 scale-[1.02] transition-all' : ''}
           ${!editing && onDragStart ? 'cursor-grab active:cursor-grabbing hover:shadow-md' : ''}
           transition-all duration-150
         `}
         data-card-id={card.id}
+        style={isJustDropped ? { animation: 'drop-pulse 2s ease-out' } : undefined}
+        ref={(el) => {
+          if (el && isJustDropped) {
+            console.log('[card] anim', card.id, card.title.substring(0,15));
+            // Force browser to restart the animation on this element
+            el.style.animation = 'none';
+            el.offsetHeight; // force reflow
+            el.style.animation = 'drop-pulse 2s ease-out';
+          }
+        }}
         draggable={!editing && !!onDragStart}
         onDragStart={(e) => {
           if (editing) return;

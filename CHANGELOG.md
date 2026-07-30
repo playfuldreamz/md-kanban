@@ -2,6 +2,41 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: smoother drag animations + drop position calculation
+  
+  Column animations:
+  - Target column scales up 1% with blue glow during drag-over
+  - Brief emerald flash on successful drop (400ms)
+  - Source column dims when card is lifted
+  - Empty drop zones scale up when hovered
+  
+  KanbanCard animations:
+  - Dragged card: scale-95 + slight rotate + shadow for 'lift' feel
+  - All transitions smoothed with duration-200
+  
+  Drop position:
+  - Calculates index from mouse Y position over visible cards
+  - Adjusts for same-column reorder (remove before insert)
+  - Falls back to end of column if cards off-screen
+  
+  AGENTS.md: new Rule 1 — ask clarifying questions before acting.
+- fix: remove wobble, enhance zoom-in to scale-[1.02] on drag hover
+  
+  Column now smoothly zooms in 2% with blue glow when hovered.
+  Only the actively hovered column animates (via onDragEnter/Leave).
+  Drop indicator line shows on all columns including source.
+  
+  Removed wobble keyframe from index.css.
+- feat: card pinning — pin cards to top of column
+  
+  Parser: recognizes <!-- pinned --> in rawLine → card.pinned.
+  Writer: appends <!-- pinned --> on serialize for pinned cards.
+  Server: PUT /api/cards/:id accepts { pinned: true/false }.
+  Reducer: CARD_TOGGLE_PIN toggles pinned state.
+  Column: sorts pinned cards first, unpins on drop below pinned zone.
+  KanbanCard: hover-revealed pin icon (Pinned/Pin), amber when active.
+  CommandPalette: pin indicator (📌) in search results.
+  useBoard: togglePin() mutation through API.
 - chore: bump to 0.1.56
 - fix: assignee section always visible in EditCardDialog
   

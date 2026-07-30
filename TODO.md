@@ -45,23 +45,15 @@
 # kanban-md — Roadmap
 
 ## To Do
-- [ ] **Board templates** — kanban-md init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 3-4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. #polish
-- [ ] **Export** — GET /api/board/export?format=json|csv. CSV for spreadsheet users. Optional static HTML export for sharing a snapshot. #polish
-- [ ] **Column WIP limits** — Per-column Work-In-Progress limits (e.g. "In Progress" max 5). Column header turns amber when exceeded. Configured via @wip block in preamble. #polish
-- [ ] **E2E tests with Playwright** — Browser-based tests: open board → drag card → verify file on disk → verify WebSocket sync. Current test suite is solid (79 tests) but has no browser automation. #polish
 - [ ] **Due dates** — Parse due dates from card text (due:YYYY-MM-DD or 📅 YYYY-MM-DD) and show visual indicators. Overdue cards get a red badge. A "Due Soon" filter in the search palette. #critical
-- [ ] **Demo: due date** — This card has an upcoming due date. Should show a blue "Due Aug 15" badge. due:2026-08-15 #polish #critical
+- [ ] **Board templates** — kanban-md init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 3-4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. #polish
+- [ ] **Column WIP limits** — Per-column Work-In-Progress limits (e.g. "In Progress" max 5). Column header turns amber when exceeded. Configured via @wip block in preamble. #polish
+- [ ] **Export** — GET /api/board/export?format=json|csv. CSV for spreadsheet users. Optional static HTML export for sharing a snapshot. #polish
 - [ ] **Demo: assignees** — This card has @alice and @bob assigned. Should show colored initial chips Ⓐ Ⓑ in the card. @alice @bob #polish
+- [ ] **Demo: due date** — This card has an upcoming due date. Should show a blue "Due Aug 15" badge. due:2026-08-15 #polish #critical
+- [ ] **E2E tests with Playwright** — Browser-based tests: open board → drag card → verify file on disk → verify WebSocket sync. Current test suite is solid (79 tests) but has no browser automation. #polish
 - [ ] **Git integration (opt-in)** — --git flag that auto-commits TODO.md changes with meaningful messages (kanban-md: moved "Fix login" → In Progress). Respects user's git config. Off by default. #polish
 - [ ] **Demo: overdue** — This card is past its due date. Should show a red "Overdue" badge. due:2025-01-15 #polish
-- [ ] **Card pinning** — Pin cards to the top of their column. Hover-revealed pin icon. Pinned cards sort above unpinned, most recently pinned first. Unpins on drag below pinned section. `<!-- pinned -->` comment in rawLine. #important
-  - [x] **Parser/writer** — recognize `<!-- pinned -->` in rawLine → `card.pinned`, append on serialize
-  - [x] **Server** — PUT /api/cards/:id accepts `{ pinned: true/false }`
-  - [x] **Reducer** — CARD_TOGGLE_PIN action + Card.pinned type
-  - [x] **Column.tsx** — sort pinned cards first, unpin on drop below pinned zone
-  - [x] **KanbanCard** — hover-revealed pin icon (Pinned/Pin from Appica), amber when active
-  - [x] **CommandPalette** — pin indicator (📌) in search results
-  - [x] **useBoard** — togglePin() mutation through API
 - [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
 - [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical
 - [ ] **Demo: warning card** — This card uses - [!] syntax. Should show an amber left border in the UI. #polish
@@ -71,14 +63,14 @@
 
 
 ## Done
-- [x] **Search & filter** — Cmd+K / Ctrl+K command palette that filters all cards (including sub-tasks) by title, description, tag, or column. Results show column badge, priority tags, done status. Arrow keys navigate, Enter selects and scrolls to card with highlight. #critical
-  - [x] **CommandPalette** — modal overlay with search input, flattened card list, highlight matching text, keyboard navigation
-  - [x] **BoardShell** — Cmd+K listener, onSelect scrolls to card with brief ring highlight
-  - [x] **flattenBoard** — recursively flattens all cards and sub-tasks into searchable list
 - [x] **Markdown rendering in descriptions** — Render inline markdown in card descriptions: [links](url), `code`, *italic*, **bold**. Zero format change — TODO.md is already markdown. #critical <!-- pinned -->
   - [x] **renderInline()** — tiny markdown→HTML converter: bold, italic, code, links. Escape-then-render — safe by construction.
   - [x] **KanbanCard** — swap plain text `<p>` for rendered HTML via dangerouslySetInnerHTML
   - [x] **Tests** — 8 test cases: bold, italic, code, links, HTML escaping, mixed, plain, empty
+- [x] **Search & filter** — Cmd+K / Ctrl+K command palette that filters all cards (including sub-tasks) by title, description, tag, or column. Results show column badge, priority tags, done status. Arrow keys navigate, Enter selects and scrolls to card with highlight. #critical
+  - [x] **CommandPalette** — modal overlay with search input, flattened card list, highlight matching text, keyboard navigation
+  - [x] **BoardShell** — Cmd+K listener, onSelect scrolls to card with brief ring highlight
+  - [x] **flattenBoard** — recursively flattens all cards and sub-tasks into searchable list
 - [x] **Card creation date** — Track when a card was created via HTML comment in rawLine. Parser ignores HTML comments so they survive round-trips. UI shows "Created 3 days ago" on hover. #polish
   - [x] **Parser** — extract createdAt from <!-- created:YYYY-MM-DD --> comment, strip from description
   - [x] **Writer** — append createdAt comment when serializing changed cards
@@ -108,6 +100,14 @@
   - [x] **useUndoRedo** — ref-based ring buffer, useState flags for reactivity, deep-clones states
   - [x] **useBoard** — userDispatch wraps all user actions with pushState, doUndo/doRedo dispatch BOARD_SYNC
   - [x] **BoardShell** — undo/redo buttons in header, keyboard shortcut listeners
+- [x] **Card pinning** — Pin cards to the top of their column. Hover-revealed pin icon. Pinned cards sort above unpinned, most recently pinned first. Unpins on drag below pinned section. `` comment in rawLine. #important
+  - [x] **Parser/writer** — recognize `<!-- pinned -->` in rawLine → `card.pinned`, append on serialize
+  - [x] **Server** — PUT /api/cards/:id accepts `{ pinned: true/false }`
+  - [x] **Reducer** — CARD_TOGGLE_PIN action + Card.pinned type
+  - [x] **Column.tsx** — sort pinned cards first, unpin on drop below pinned zone
+  - [x] **KanbanCard** — hover-revealed pin icon (Pinned/Pin from Appica), amber when active
+  - [x] **CommandPalette** — pin indicator (📌) in search results
+  - [x] **useBoard** — togglePin() mutation through API
 - [x] **Virtual scrolling for large boards** — Lightweight custom VirtualCardList with ResizeObserver-measured heights. Only activates above 30 cards; below threshold renders normally. #polish
   - [x] **VirtualCardList** — renders only visible cards + 5 overscan, measures actual heights via ResizeObserver
   - [x] **Column.tsx** — replaces flat card map with VirtualCardList, simplified drag-drop to column-level

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useRef } from 'react';
 import { Badge } from '@appica/ui-react/badge';
 import { Button } from '@appica/ui-react/button';
 import { ClipboardCheck, Clock, CircleCheck, LayoutKanban, AlertTriangle, Sparkles, Trash } from '@appica/icons-react';
@@ -68,8 +68,9 @@ export default function ColumnView({
   onMove, onDeleteColumn, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask,
   togglePin, boardAssignees, dragCardId, dragColumnId, onDragStart, onDragEnd,
 }: ColumnViewProps) {
-  const [justDropped, setJustDropped] = useState(false);
+  const [droppedCardId, setDroppedCardId] = useState<string | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<{ index: number; y: number } | null>(null);
+  const cardsAreaRef = useRef<HTMLDivElement>(null);
   const { icon, priority: colPriority } = columnIcon(column);
 
   const isSource = dragCardId !== null && dragColumnId === column.id;
@@ -89,39 +90,58 @@ export default function ColumnView({
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     if (!dragCardId) return;
-    // Calculate insertion index from mouse position over visible cards
+
     const container = e.currentTarget;
+    const containerRect = container.getBoundingClientRect();
+    const mouseY = e.clientY;
+    const HEADER_H = 48; // column header height
+
+    // Auto-scroll when near edges
+    const scrollZone = 40;
+    if (mouseY < containerRect.top + scrollZone) container.scrollTop -= 10;
+    else if (mouseY > containerRect.bottom - scrollZone) container.scrollTop += 10;
+
+    // Calculate insertion index from visible card elements
     const cards = container.querySelectorAll('[data-card-id]');
     let insertIdx = column.cards.length;
-    if (cards.length > 0) {
-      const mouseY = e.clientY;
-      for (let i = 0; i < cards.length; i++) {
-        const rect = cards[i].getBoundingClientRect();
-        if (mouseY < rect.top + rect.height / 2) {
-          const cardId = cards[i].getAttribute('data-card-id');
-          const actualIdx = column.cards.findIndex(c => c.id === cardId);
-          insertIdx = actualIdx >= 0 ? actualIdx : i;
-          break;
-        }
+    for (let i = 0; i < cards.length; i++) {
+      const rect = cards[i].getBoundingClientRect();
+      if (mouseY < rect.top + rect.height / 2) {
+        const id = cards[i].getAttribute('data-card-id');
+        const ai = column.cards.findIndex(c => c.id === id);
+        insertIdx = ai >= 0 ? ai : i;
+        break;
       }
     }
-    // If dragging within same column, the dragged card is still in the list
-    // so insertion index needs adjusting
+    // Adjust for same-column drag
     if (dragColumnId === column.id) {
-      const currentIdx = column.cards.findIndex(c => c.id === dragCardId);
-      if (currentIdx >= 0 && currentIdx > insertIdx) insertIdx++;
+      const cur = column.cards.findIndex(c => c.id === dragCardId);
+      if (cur >= 0 && cur < insertIdx) insertIdx--;
     }
-    // Calculate Y position for the drop line relative to the container
-    let dropY = 0;
-    if (cards.length > 0 && insertIdx < cards.length) {
-      const cardEl = cards[insertIdx] as HTMLElement;
-      const containerRect = container.getBoundingClientRect();
-      dropY = cardEl.getBoundingClientRect().top - containerRect.top - 2;
-    } else if (cards.length > 0) {
-      const lastEl = cards[cards.length - 1] as HTMLElement;
-      const containerRect = container.getBoundingClientRect();
-      dropY = lastEl.getBoundingClientRect().bottom - containerRect.top;
+
+    // Drop line Y: at midpoint between cards (skipping the dragged card itself)
+    let dropY = HEADER_H;
+    // Get the list of cards excluding the one being dragged (for same-column)
+    const effectiveCards = dragColumnId === column.id
+      ? column.cards.filter(c => c.id !== dragCardId)
+      : column.cards;
+    if (insertIdx === 0 && cards.length > 0) {
+      const firstEl = cards[0] as HTMLElement;
+      dropY = firstEl.getBoundingClientRect().top - containerRect.top - 4;
+    } else if (insertIdx > 0) {
+      const prevCard = effectiveCards[insertIdx - 1];
+      const currCard = insertIdx < effectiveCards.length ? effectiveCards[insertIdx] : undefined;
+      const prevEl = prevCard ? Array.from(cards).find(e => e.getAttribute('data-card-id') === prevCard.id) as HTMLElement | undefined : undefined;
+      const currEl = currCard ? Array.from(cards).find(e => e.getAttribute('data-card-id') === currCard.id) as HTMLElement | undefined : undefined;
+      if (prevEl && currEl) {
+        dropY = (prevEl.getBoundingClientRect().bottom + currEl.getBoundingClientRect().top) / 2 - containerRect.top;
+      } else if (prevEl) {
+        dropY = prevEl.getBoundingClientRect().bottom - containerRect.top + 4;
+      } else if (currEl) {
+        dropY = currEl.getBoundingClientRect().top - containerRect.top - 4;
+      }
     }
+
     setDragOverIndex({ index: insertIdx, y: dropY });
   }, [dragCardId, dragColumnId, column]);
 
@@ -136,16 +156,22 @@ export default function ColumnView({
     }
     onMove(dragCardId, column.id, dragOverIndex.index);
     setDragOverIndex(null);
-    setJustDropped(true);
-    setTimeout(() => setJustDropped(false), 500);
     onDragEnd();
+    console.log('[drop]', dragCardId, '→', column.id);
+    // Double rAF: commit position change first, THEN trigger animation
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        console.log('[drop] animating', dragCardId);
+        setDroppedCardId(dragCardId);
+      });
+    });
+    setTimeout(() => setDroppedCardId(null), 2300);
   }, [dragCardId, dragOverIndex, column, onMove, onDragEnd]);
 
   return (
     <div
       className={`relative flex-1 min-w-[288px] max-w-[36rem] flex-shrink-0 flex flex-col max-h-full rounded-xl border shadow-sm transition-all duration-200 ${
         isDragOver && !isSource ? 'border-primary bg-primary-subtle/10 shadow-lg scale-[1.03]' : 
-        justDropped ? 'border-emerald-500 bg-emerald-500/5 shadow-md' :
         isSource ? 'border-border-muted opacity-90' : 'border-border bg-background-subtle'
       }`}
       onDragOver={handleDragOver}
@@ -190,12 +216,13 @@ export default function ColumnView({
           )}
         </div>
       ) : (
+        <div ref={cardsAreaRef} className="flex-1 overflow-y-auto">
         <VirtualCardList
           items={visibleCards}
           itemKey={(card) => card.id}
           estimatedItemHeight={90}
           threshold={30}
-          className="flex-1 overflow-y-auto p-2 pr-4"
+          className="p-2 pr-4"
           renderItem={(card) => (
             <div className="pb-1.5">
               <KanbanCard
@@ -203,6 +230,7 @@ export default function ColumnView({
                 columnName={column.name}
                 priorities={priorities}
                 isDragging={dragCardId === card.id}
+                isJustDropped={droppedCardId === card.id}
                 onToggle={() => onToggle(card.id)}
                 onDelete={() => onDelete(card.id)}
                 onEdit={onEdit}
@@ -218,6 +246,7 @@ export default function ColumnView({
             </div>
           )}
         />
+        </div>
       )}
 
       {/* Add card */}

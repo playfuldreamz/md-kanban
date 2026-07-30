@@ -2,3 +2,15 @@
 @import '@appica/ui-react/styles.css';
 
 @source '../node_modules/@appica/ui-react/dist';
+
+@keyframes drop-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); transform: scale(1); }
+  15% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.3); transform: scale(1.03); }
+  30% { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); transform: scale(1.01); }
+  60% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.1); transform: scale(1.02); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); transform: scale(1); }
+}
+
+.drop-anim {
+  animation: drop-pulse 2s ease-out;
+}
