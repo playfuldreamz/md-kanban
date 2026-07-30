@@ -8,6 +8,22 @@
   </head>
   <body class="bg-background text-foreground">
     <div id="root"></div>
+    <!-- Apply theme class before React mounts to prevent flash of wrong theme -->
+    <script>
+      (function() {
+        var storageKey = 'theme';
+        var defaultTheme = 'system';
+        var themes = ['light', 'dark'];
+        var stored = localStorage.getItem(storageKey) || defaultTheme;
+        var resolved = stored === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : stored;
+        var el = document.documentElement;
+        el.classList.remove.apply(el.classList, themes);
+        el.classList.add(resolved);
+        el.style.colorScheme = resolved;
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

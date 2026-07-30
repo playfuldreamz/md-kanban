@@ -35,6 +35,12 @@ function displayName(col: Column): string {
   return col.name.replace(/^[\p{Emoji_Presentation}\p{Emoji}\uFE0F\u{1F300}-\u{1F9FF}\u{2600}-\u{27BF}\u{2702}-\u{27B0}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]\s*/u, '').trim() || col.name;
 }
 
+function isDoneColumn(col: Column): boolean {
+  const id = col.id.toLowerCase();
+  const name = col.name.toLowerCase();
+  return id === 'done' || id.includes('done') || name.includes('done');
+}
+
 interface ColumnViewProps {
   column: Column;
   showCompleted: boolean;
@@ -112,12 +118,15 @@ export default function ColumnView({
 
       {/* Cards */}
       {visibleCards.length === 0 ? (
-        <div className={`flex-1 flex items-center justify-center m-2 border-2 border-dashed rounded-lg transition-colors ${
+        <div className={`flex-1 flex flex-col items-center justify-center m-2 border-2 border-dashed rounded-lg transition-colors ${
           isDragOver ? 'border-primary bg-primary-subtle/10' : 'border-border-muted'
         }`}>
-          <p className={`text-xs ${isDragOver ? 'text-primary' : 'text-foreground-subtle'}`}>
-            {isDragOver ? 'Drop here' : 'No tasks'}
+          <p className={`text-xs font-medium ${isDragOver ? 'text-primary' : 'text-foreground-subtle'}`}>
+            {isDragOver ? 'Drop here' : isDoneColumn(column) ? 'Drag completed tasks here' : column.id.includes('progress') ? 'Move active tasks here' : 'Add your first task below'}
           </p>
+          {!isDragOver && (
+            <p className="text-[10px] text-foreground-subtle mt-1">Press <kbd className="text-[9px] bg-background-muted border border-border-muted rounded px-1 py-px">N</kbd> to focus the input</p>
+          )}
         </div>
       ) : (
         <VirtualCardList

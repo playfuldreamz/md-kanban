@@ -381,3 +381,20 @@ Our additional responsibilities:
 - ❌ Animation without `motion-safe:` — every transition must respect reduced motion
 - ❌ Hardcoded color values — always use Appica UI tokens (`text-foreground`, not `text-gray-900`)
 - ❌ `@appica/ui-react` direct import — use subpath imports for tree-shaking (`@appica/ui-react/button`)
+- ❌ Native `title` attribute for tooltips — use the custom `Tooltip` component from `components/Tooltip.tsx`
+
+## Tooltip pattern
+
+Use the custom `Tooltip` component for all hover tooltips — never the native `title` attribute. It uses a portal-based overlay matching the priority indicator tooltip style:
+
+```tsx
+import Tooltip from './Tooltip';
+
+<Tooltip label="Undo (Ctrl+Z)">
+  <button onClick={doUndo} disabled={!canUndo}>
+    <ArrowBackUp className="w-3.5 h-3.5" />
+  </button>
+</Tooltip>
+```
+
+The tooltip renders as a `bg-background-inverse text-foreground-inverse` badge centered above the element. It appears on hover and hides on leave. Keep labels short — 1-3 words. Include keyboard shortcuts in parentheses: `"Search (⌘K)"`, `"Undo (Ctrl+Z)"`.

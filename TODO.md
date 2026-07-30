@@ -35,8 +35,6 @@
 # kanban-md — Roadmap
 
 ## To Do
-- [ ] **Due dates** — Parse due dates from card text (due:YYYY-MM-DD or 📅 YYYY-MM-DD) and show visual indicators. Overdue cards get a red badge. A "Due Soon" filter in the search palette. #critical
-  - [ ] **sdadasd** <!-- created:2026-07-29 -->
 - [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
 - [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical
 - [ ] **Assignee support** — Parse @username in descriptions and render as name chips. Purely a display convention. @assignees block in preamble maps usernames → display names + colors. #important
@@ -46,6 +44,8 @@
 - [ ] **Column WIP limits** — Per-column Work-In-Progress limits (e.g. "In Progress" max 5). Column header turns amber when exceeded. Configured via @wip block in preamble. #polish
 - [ ] **E2E tests with Playwright** — Browser-based tests: open board → drag card → verify file on disk → verify WebSocket sync. Current test suite is solid (79 tests) but has no browser automation. #polish
 - [ ] **Plugin system for parser extensions** — Allow custom line parsers (e.g. - [!] **Title** as a warning card with special styling). The modular parser architecture already supports this pattern. #polish
+- [ ] **Due dates** — Parse due dates from card text (due:YYYY-MM-DD or 📅 YYYY-MM-DD) and show visual indicators. Overdue cards get a red badge. A "Due Soon" filter in the search palette. #critical
+  - [ ] **sdadasd** <!-- created:2026-07-29 -->
 
 
 ## In Progress
@@ -97,3 +97,7 @@
   - [x] **Frontend** — useBoard: files list, currentFile, switchFile, apiUrl helper
   - [x] **FileSwitcher** — dropdown in header, hidden when single file
   - [x] **README** — Multi-file section, GET /api/files documented
+- [x] **In-app help & onboarding** — Teach users (and AI agents reading the file) how to use the UI without leaving the app. #important
+  - [x] **`?` help modal** — keyboard shortcut reference + feature overview (search, undo/redo, tags, sub-tasks, drag, create date). Press `?` to open.
+  - [x] **Empty-state tips** — contextual hints when columns are empty or board has no cards ("Add your first task below", "Drag cards here", "Press Cmd+K to search")
+  - [x] **First-run overlay** — on first visit (localStorage flag), show a quick guided tour pointing at header buttons, search, undo, theme toggle, etc.

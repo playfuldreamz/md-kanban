@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback } from 'react';
-import { createPortal } from 'react-dom';
 import { Button } from '@appica/ui-react/button';
 import { Trash, Pencil } from '@appica/icons-react';
 import {
@@ -15,6 +14,7 @@ import EditCardDialog from './EditCardDialog';
 import { renderInline } from '../lib/markdown';
 import { PRIORITY_MAP, formatCreatedDate, extractTags } from './card-utils';
 import { SubTaskSection } from './SubTaskList';
+import Tooltip from './Tooltip';
 import type { Card } from '../types';
 
 interface KanbanCardProps {
@@ -38,7 +38,6 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
   const [editTitle, setEditTitle] = useState(card.title);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string } | null>(null);
   const [childrenOpen, setChildrenOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const propsPriorities = priorities;
@@ -117,17 +116,13 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
               <div className="flex items-center justify-between mt-1.5 gap-2">
                 <div className="flex items-center gap-1 flex-wrap">
                   {tags.map(({ tag, def }) => (
-                    <span
-                      key={tag}
-                      className={`inline-flex items-center gap-1 px-1.5 py-px rounded text-[10px] font-medium text-white cursor-default ${def.color}`}
-                      onMouseEnter={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        setTooltip({ x: rect.left + rect.width / 2, y: rect.top - 6, label: def.label });
-                      }}
-                      onMouseLeave={() => setTooltip(null)}
-                    >
-                      {def.label}
-                    </span>
+                    <Tooltip key={tag} label={def.label} placement="top">
+                      <span
+                        className={`inline-flex items-center gap-1 px-1.5 py-px rounded text-[10px] font-medium text-white cursor-default ${def.color}`}
+                      >
+                        {def.label}
+                      </span>
+                    </Tooltip>
                   ))}
                 </div>
                 {card.createdAt && (
@@ -206,15 +201,6 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
         onClose={() => setEditDialogOpen(false)}
       />
 
-      {tooltip && createPortal(
-        <div
-          className="fixed z-[9999] px-1.5 py-0.5 rounded text-[10px] font-medium bg-background-inverse text-foreground-inverse shadow pointer-events-none whitespace-nowrap"
-          style={{ left: tooltip.x, top: tooltip.y, transform: 'translate(-50%, -100%)' }}
-        >
-          {tooltip.label}
-        </div>,
-        document.body
-      )}
     </>
   );
 }

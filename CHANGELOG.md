@@ -2,6 +2,23 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- docs: remove Server-side TypeScript ticket — vanilla JS stays per Rule 7
+- docs: drop Server-side TypeScript — vanilla JS stays per Rule 7
+- feat: multi-file support with project switcher dropdown
+  
+  CLI: --file can be repeated, --dir watches all .md files.
+  Server: Map<path, {boardRef, watcher}> per-file state, one chokidar
+  per file. WebSocket messages include 'file' field for routing.
+  
+  API: all routes accept ?file= query param. GET /api/files returns
+  list of watched files with titles and card counts.
+  
+  Frontend: useBoard tracks currentFile/switchFile, apiUrl helper
+  appends ?file= to all mutations. FileSwitcher dropdown in header
+  appears when >1 files registered, hidden for single file.
+  
+  README: Multi-file section under Architecture, GET /api/files
+  documented in API Surface.
 - docs: mark tag system as done with sub-tasks in TODO.md
 - feat: universal tag system — any #tag renders as colored badge
   

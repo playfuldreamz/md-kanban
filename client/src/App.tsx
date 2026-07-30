@@ -14,6 +14,14 @@ export default function App() {
     }
   }, [board.needsConversion, dismissed]);
 
+  // Migrate legacy theme — old binary toggle only stored 'light'/'dark', not 'system'
+  useEffect(() => {
+    const stored = localStorage.getItem('theme');
+    if (stored && !['system', 'light', 'dark'].includes(stored)) {
+      localStorage.setItem('theme', 'system');
+    }
+  }, []);
+
   return (
     <>
       <BoardShell {...board} addColumn={board.addColumn!} deleteColumn={board.deleteColumn!} />

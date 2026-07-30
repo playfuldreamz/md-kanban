@@ -8,6 +8,8 @@ import ThemeToggle from './ThemeToggle';
 import ColumnList from './ColumnList';
 import FileSwitcher from './FileSwitcher';
 import CommandPalette from './CommandPalette';
+import HelpDialog from './HelpDialog';
+import Tooltip from './Tooltip';
 import ToastNotifications from './ToastNotifications';
 
 interface BoardShellProps {
@@ -44,10 +46,18 @@ export default function BoardShell(props: BoardShellProps) {
   const [dragCardId, setDragCardId] = useState<string | null>(null);
   const [dragColumnId, setDragColumnId] = useState<string | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const isMac = navigator.platform.includes('Mac');
 
   useEffect(() => {
     if (loading || error) return;
-    const handleKey = (e: KeyboardEvent) => {
+    // First-run onboarding
+    if (!localStorage.getItem('kanban-md-onboarded')) {
+      setShowOnboarding(true);
+    }
+
+  const handleKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if ((e.target as HTMLElement)?.contentEditable === 'true') return;
       if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey) {
@@ -58,6 +68,10 @@ export default function BoardShell(props: BoardShellProps) {
       if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setPaletteOpen(true);
+      }
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        setHelpOpen(true);
       }
       if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
         e.preventDefault();
@@ -131,40 +145,56 @@ export default function BoardShell(props: BoardShellProps) {
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
-            <button
-              onClick={doUndo}
-              disabled={!canUndo}
-              className="flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground transition-colors border border-border rounded px-1.5 py-1 disabled:opacity-30 disabled:cursor-default"
-              title="Undo (Ctrl+Z)"
-            >
-              <ArrowBackUp className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={doRedo}
-              disabled={!canRedo}
-              className="flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground transition-colors border border-border rounded px-1.5 py-1 disabled:opacity-30 disabled:cursor-default"
-              title="Redo (Ctrl+Shift+Z)"
-            >
-              <ArrowForwardUp className="w-3.5 h-3.5" />
-            </button>
+            <Tooltip label={isMac ? 'Undo (⌘Z)' : 'Undo (Ctrl+Z)'}>
+              <button
+                onClick={doUndo}
+                disabled={!canUndo}
+                className="flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground transition-colors border border-border rounded px-1.5 py-1 disabled:opacity-30 disabled:cursor-default"
+              >
+                <ArrowBackUp className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
+            <Tooltip label={isMac ? 'Redo (⌘⇧Z)' : 'Redo (Ctrl+Shift+Z)'}>
+              <button
+                onClick={doRedo}
+                disabled={!canRedo}
+                className="flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground transition-colors border border-border rounded px-1.5 py-1 disabled:opacity-30 disabled:cursor-default"
+              >
+                <ArrowForwardUp className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
           </div>
-          <button
-            onClick={() => setPaletteOpen(true)}
-            className="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors border border-border rounded-md px-2 py-1"
-          >
-            <Search className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Search</span>
-            <kbd className="hidden sm:inline text-[10px] bg-background-muted rounded px-1 py-px border border-border-muted ml-1">
-              {navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'}
-            </kbd>
-          </button>
+          <Tooltip label={isMac ? 'Search (⌘K)' : 'Search (Ctrl+K)'}>
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors border border-border rounded-md px-2 py-1"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Search</span>
+              <kbd className="hidden sm:inline text-[10px] bg-background-muted rounded px-1 py-px border border-border-muted ml-1">
+                {navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'}
+              </kbd>
+            </button>
+          </Tooltip>
+          <Tooltip label="Help (?)">
+            <button
+              onClick={() => setHelpOpen(true)}
+              className="flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground transition-colors border border-border rounded px-1.5 py-1"
+            >
+              <span className="font-medium">?</span>
+            </button>
+          </Tooltip>
           {!connected && (
             <span className="flex items-center gap-1 text-xs text-foreground-muted">
               <Loader className="w-3 h-3 animate-spin" />
               Reconnecting...
             </span>
           )}
-          <ThemeToggle />
+          <Tooltip label="Toggle theme">
+            <span>
+              <ThemeToggle />
+            </span>
+          </Tooltip>
         </div>
       </header>
 
@@ -203,6 +233,30 @@ export default function BoardShell(props: BoardShellProps) {
         onClose={() => setPaletteOpen(false)}
         onSelect={handlePaletteSelect}
       />
+
+      <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+
+      {/* First-run onboarding overlay */}
+      {showOnboarding && (
+        <div className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-background border border-border rounded-xl shadow-2xl max-w-sm p-6 text-center space-y-4">
+            <h2 className="text-lg font-semibold text-foreground">Welcome to md-kanban 🏷️</h2>
+            <div className="text-sm text-foreground-muted space-y-1.5 text-left">
+              <p><kbd className="text-[10px] bg-background-muted border border-border rounded px-1 py-px">{isMac ? '⌘K' : 'Ctrl+K'}</kbd> Search all tasks</p>
+              <p><kbd className="text-[10px] bg-background-muted border border-border rounded px-1 py-px">{isMac ? '⌘Z' : 'Ctrl+Z'}</kbd> Undo / <kbd className="text-[10px] bg-background-muted border border-border rounded px-1 py-px">{isMac ? '⌘⇧Z' : 'Ctrl+⇧Z'}</kbd> Redo</p>
+              <p><kbd className="text-[10px] bg-background-muted border border-border rounded px-1 py-px">N</kbd> Focus add-task input</p>
+              <p><kbd className="text-[10px] bg-background-muted border border-border rounded px-1 py-px">?</kbd> Open help & shortcuts</p>
+              <p className="mt-2">Drag cards between columns. Type <code className="text-[11px] bg-background-muted rounded px-1">#tags</code> in descriptions.</p>
+            </div>
+            <button
+              onClick={() => { setShowOnboarding(false); localStorage.setItem('kanban-md-onboarded', '1'); }}
+              className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-strong transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
 
       <ToastNotifications error={error} connected={connected} undoCard={undoCard} onUndo={undoDelete} />
     </div>
