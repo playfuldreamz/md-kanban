@@ -50,7 +50,7 @@ export default function ColumnList({
 
   return (
     <div className="flex-1 overflow-x-auto overflow-y-hidden">
-      <div className="flex gap-6 p-6 h-full items-start justify-center min-w-max">
+      <div className="flex gap-6 p-6 h-full items-start min-w-max">
         {columns.map((col) => (
           <ColumnView
             key={col.id}
@@ -76,7 +76,7 @@ export default function ColumnList({
 
         {/* Add column button / form */}
         {adding ? (
-          <div className="w-64 flex-shrink-0 rounded-xl border-2 border-dashed border-border-muted bg-background-subtle p-3 flex flex-col gap-2">
+          <div className="w-72 flex-shrink-0 rounded-xl border-2 border-dashed border-border-muted bg-background-subtle p-3 flex flex-col gap-2">
             <Input
               placeholder="Column name..."
               value={name}
@@ -116,7 +116,7 @@ export default function ColumnList({
         ) : (
           <button
             onClick={() => setAdding(true)}
-            className="w-64 flex-shrink-0 h-32 rounded-xl border-2 border-dashed border-border-muted bg-background-subtle hover:bg-background-muted hover:border-border transition-colors flex flex-col items-center justify-center gap-2 group"
+            className="w-72 flex-shrink-0 h-32 rounded-xl border-2 border-dashed border-border-muted bg-background-subtle hover:bg-background-muted hover:border-border transition-colors flex flex-col items-center justify-center gap-2 group"
           >
             <Plus className="w-5 h-5 text-foreground-muted group-hover:text-foreground transition-colors" />
             <span className="text-sm text-foreground-muted group-hover:text-foreground transition-colors font-medium">

@@ -2,6 +2,11 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- fix: add missing lib files to npm package, bump to 0.1.52
+  
+  'files' array in package.json was missing routes.js, server-utils.js,
+  plugin-runner.js, and builtin/ directory. These are now included so
+  npx md-kanban works with the multi-file server and plugin system.
 - docs: mark plugin system sub-tasks as complete, clean stray sub-task
   
   7 of 8 sub-tasks done. Docs update (HelpDialog/README) remains.
