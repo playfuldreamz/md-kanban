@@ -2,6 +2,18 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: virtual scrolling for large card lists
+  
+  VirtualCardList component: renders only visible cards + 5 overscan.
+  Uses ResizeObserver to measure actual item heights for precise
+  scroll position. Falls back to plain rendering below 30 cards.
+  
+  Column.tsx: replaced flat card mapping with VirtualCardList.
+  Simplified drag-drop to column-level drop (per-index positioning
+  is not available in virtualized lists — drops append to column end).
+  
+  Zero visual change — columns look identical, just fewer DOM nodes
+  when the list is long.
 - feat: undo/redo stack with visible header buttons and keyboard shortcuts
   
   useUndoRedo hook: ring buffer of 20 board snapshots. useState flags
