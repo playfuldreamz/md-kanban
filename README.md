@@ -208,6 +208,23 @@ Indented checkboxes (`  - [ ]`) become nested sub-tasks. Unlimited depth in the 
   - [ ] GitHub provider
 ```
 
+### Plugins
+
+Add `@plugins` to the preamble to enable extensions. Ships with two built-in plugins:
+
+| Plugin | Syntax | Effect |
+|--------|--------|--------|
+| `due-dates` | `due:YYYY-MM-DD` in description | Colored badge: red overdue, amber today, blue upcoming. Date picker in EditCardDialog. |
+| `warning-cards` | `- [!] **Title**` | Amber left border on the card. Toggle in EditCardDialog. |
+
+```markdown
+<!--
+  @plugins due-dates, warning-cards
+-->
+```
+
+Custom plugins can be placed in `~/kanban-md/plugins/` or `<project>/.kanban/plugins/`. Each plugin exports `{ name, parseCard(card, rawLine), serializeCard(card, line) }`.
+
 ### Round-trip fidelity
 
 The parser preserves `rawLine` for every card. When serializing, if a card hasn't changed its title/description/done state, the original line is written back verbatim. Only mutated cards get new lines. This means:

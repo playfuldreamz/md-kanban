@@ -2,6 +2,17 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- fix: warning toggle now works end-to-end + quick-add tag input
+  
+  Warning toggle was setting state but never sending it to the server.
+  Now threaded through the full chain: EditCardDialog → onSave →
+  KanbanCard.onEdit → useBoard → PUT /api/cards/:id { warning } →
+  server sets card.warning → writer serializes as - [!].
+  
+  Added inline '+ tag' text input next to toggle buttons in
+  EditCardDialog. Type a tag name and press Enter to add it to the
+  description (and the toggle list). Restores the quick-add
+  functionality from the old 'Add priority' form in a simpler way.
 - feat: due date picker + warning toggle in EditCardDialog
   
   EditCardDialog now has a date input for setting due dates (appends

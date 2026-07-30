@@ -6,7 +6,7 @@ import {
   AlertDialogFooter,
   AlertDialogClose,
 } from '@appica/ui-react/alert-dialog';
-import { Search, ArrowBackUp, ArrowForwardUp, ClipboardCheck, Clock, CircleCheck, Pencil, Trash, Plus, ChevronRight } from '@appica/icons-react';
+import { Search, ArrowBackUp, ArrowForwardUp, ClipboardCheck, Clock, CircleCheck, Pencil, Trash, Plus, ChevronRight, AlertTriangle } from '@appica/icons-react';
 
 /**
  * Help dialog shown when pressing `?`.
@@ -36,6 +36,7 @@ const FEATURES = [
   { icon: ChevronRight, label: 'Sub-tasks', desc: 'Indent 2 spaces for nested checkboxes. Up to 4 visual levels with progress badges.' },
   { icon: Pencil, label: 'Tags', desc: 'Type #bug #feature #critical in descriptions — any #tag becomes a colored badge.' },
   { icon: Trash, label: 'Dates', desc: 'Cards auto-stamp creation dates. Hover any card or sub-task to see "Created 3 days ago".' },
+  { icon: AlertTriangle, label: 'Plugins', desc: 'Enable due-dates and warning-cards via @plugins in preamble. due:YYYY-MM-DD sets deadlines; - [!] marks warning cards.' },
 ];
 
 export default function HelpDialog({ open, onClose }: HelpDialogProps) {

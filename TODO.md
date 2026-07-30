@@ -53,16 +53,7 @@
 - [ ] **Git integration (opt-in)** — --git flag that auto-commits TODO.md changes with meaningful messages (kanban-md: moved "Fix login" → In Progress). Respects user's git config. Off by default. #polish
 - [ ] **Column WIP limits** — Per-column Work-In-Progress limits (e.g. "In Progress" max 5). Column header turns amber when exceeded. Configured via @wip block in preamble. #polish
 - [ ] **E2E tests with Playwright** — Browser-based tests: open board → drag card → verify file on disk → verify WebSocket sync. Current test suite is solid (79 tests) but has no browser automation. #polish
-- [ ] **Plugin system for parser extensions** — Hook-based middleware at parse/serialize points. Configured via `@plugins` block in preamble. Ships with due-dates and warning-cards plugins. Users can drop `.js` files in `~/kanban-md/plugins/`. #polish
-  - [ ] **Plugin API** — `lib/plugin-runner.js`: loads named plugins from config, calls `parseCard()` and `serializeCard()` hooks per card
-  - [ ] **Preamble config** — parser reads `@plugins due-dates, warning-cards` from HTML comment block
-  - [ ] **due-dates plugin** — extracts `due:YYYY-MM-DD` from descriptions → `card.dueDate`, adds overdue/soon visual hints in KanbanCard
-  - [ ] **warning-cards plugin** — recognizes `- [!] **Title**` syntax → `card.warning = true`, renders with amber left border in KanbanCard
-  - [ ] **User plugin dir** — autoload `.js` files from `<project>/.kanban/plugins/` or `~/kanban-md/plugins/`
-  - [ ] **KanbanCard styling hooks** — warning cards get amber left border, overdue cards get red badge + border
-  - [ ] **Docs update** — HelpDialog, README, design.md, FORMAT_GUIDE updated with plugin docs and new syntax
 - [ ] **Due dates** — Parse due dates from card text (due:YYYY-MM-DD or 📅 YYYY-MM-DD) and show visual indicators. Overdue cards get a red badge. A "Due Soon" filter in the search palette. #critical
-  - [ ] **sdadasd** <!-- created:2026-07-29 -->
 
 
 ## In Progress
@@ -118,3 +109,11 @@
   - [x] **`?` help modal** — keyboard shortcut reference + feature overview (search, undo/redo, tags, sub-tasks, drag, create date). Press `?` to open.
   - [x] **Empty-state tips** — contextual hints when columns are empty or board has no cards ("Add your first task below", "Drag cards here", "Press Cmd+K to search")
   - [x] **First-run overlay** — on first visit (localStorage flag), show a quick guided tour pointing at header buttons, search, undo, theme toggle, etc.
+- [x] **Plugin system for parser extensions** — Hook-based middleware at parse/serialize points. Configured via `@plugins` block in preamble. Ships with due-dates and warning-cards plugins. Users can drop `.js` files in `~/kanban-md/plugins/`. #polish
+  - [x] **Plugin API** — `lib/plugin-runner.js`: loads named plugins from config, calls `parseCard()` and `serializeCard()` hooks per card
+  - [x] **Preamble config** — parser reads `@plugins due-dates, warning-cards` from HTML comment block
+  - [x] **due-dates plugin** — extracts `due:YYYY-MM-DD` from descriptions → `card.dueDate`, date picker in EditCardDialog, colored badge in KanbanCard
+  - [x] **warning-cards plugin** — recognizes `- [!] **Title**` syntax → `card.warning = true`, amber left border, warning toggle in EditCardDialog
+  - [x] **User plugin dir** — autoload `.js` files from `<project>/.kanban/plugins/` or `~/kanban-md/plugins/`
+  - [x] **KanbanCard styling** — warning cards get amber left border, overdue cards get red/amber/blue badge
+  - [x] **Docs update** — HelpDialog, README, design.md, FORMAT_GUIDE updated with plugin docs and new syntax

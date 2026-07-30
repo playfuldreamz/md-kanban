@@ -383,6 +383,21 @@ Our additional responsibilities:
 - ❌ `@appica/ui-react` direct import — use subpath imports for tree-shaking (`@appica/ui-react/button`)
 - ❌ Native `title` attribute for tooltips — use the custom `Tooltip` component from `components/Tooltip.tsx`
 
+## Plugin system
+
+Plugins hook into the parser/writer pipeline via `parseCard()` and `serializeCard()` callbacks. Configure in the preamble with `@plugins name1, name2`. Built-in plugins live in `lib/builtin/`; user plugins in `~/kanban-md/plugins/` or `.kanban/plugins/`.
+
+```js
+// lib/builtin/my-plugin.js
+module.exports = {
+  name: 'my-plugin',
+  parseCard(card, rawLine) { /* modify card, add fields */ return card; },
+  serializeCard(card, line) { /* modify output line */ return line; },
+};
+```
+
+Plugin errors are non-fatal — the parser continues if a plugin throws. Cards expose plugin-added fields (`dueDate`, `warning`) in the TypeScript `Card` interface for UI rendering.
+
 ## Tooltip pattern
 
 Use the custom `Tooltip` component for all hover tooltips — never the native `title` attribute. It uses a portal-based overlay matching the priority indicator tooltip style:
