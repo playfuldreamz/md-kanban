@@ -2,6 +2,12 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- chore: bump to 0.1.56
+- fix: assignee section always visible in EditCardDialog
+  
+  Removed the conditional wrapper so the assignee section (with the
+  @name input) always shows, even when no one is currently assigned.
+  Users can now add the first assignee from the dialog.
 - docs: mark all assignee sub-tasks complete
 - docs: HelpDialog + README updated with assignee info
 - feat: parse @assignees from preamble + thread through UI

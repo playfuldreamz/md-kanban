@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Badge } from '@appica/ui-react/badge';
 import { Button } from '@appica/ui-react/button';
 import { ClipboardCheck, Clock, CircleCheck, LayoutKanban, AlertTriangle, Sparkles, Trash } from '@appica/icons-react';
@@ -55,6 +55,7 @@ interface ColumnViewProps {
   onAddSubTask: (parentId: string, title: string, description?: string) => void;
   onEditSubTask: (parentId: string, childId: string, title: string, description: string) => void;
   onDeleteSubTask: (parentId: string, childId: string) => void;
+  togglePin: (cardId: string) => void;
   boardAssignees?: Record<string, { label: string; color: string; ring: string }>;
   dragCardId: string | null;
   dragColumnId: string | null;
@@ -65,34 +66,87 @@ interface ColumnViewProps {
 export default function ColumnView({
   column, showCompleted, priorities, onToggle, onDelete, onAdd, onEdit,
   onMove, onDeleteColumn, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask,
-  boardAssignees, dragCardId, dragColumnId, onDragStart, onDragEnd,
+  togglePin, boardAssignees, dragCardId, dragColumnId, onDragStart, onDragEnd,
 }: ColumnViewProps) {
+  const [justDropped, setJustDropped] = useState(false);
+  const [dragOverIndex, setDragOverIndex] = useState<{ index: number; y: number } | null>(null);
   const { icon, priority: colPriority } = columnIcon(column);
 
-  const isDragOver = dragCardId !== null && dragColumnId !== column.id;
   const isSource = dragCardId !== null && dragColumnId === column.id;
+  const isDragOver = dragCardId !== null && dragColumnId !== column.id;
+  const showDropLine = dragCardId !== null && dragOverIndex !== null;
   const isMandatory = column.id.includes('to-do') || column.name.toLowerCase().includes('to do') ||
     column.id.includes('progress') || column.name.toLowerCase().includes('progress') ||
     column.id.includes('done') || column.name.toLowerCase().includes('done');
-  const visibleCards = showCompleted ? column.cards : column.cards.filter(c => !c.done);
+  const visibleCards = (showCompleted ? column.cards : column.cards.filter(c => !c.done))
+    .sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return 0; // preserve relative order within pinned/unpinned groups
+    });
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-  }, []);
+    if (!dragCardId) return;
+    // Calculate insertion index from mouse position over visible cards
+    const container = e.currentTarget;
+    const cards = container.querySelectorAll('[data-card-id]');
+    let insertIdx = column.cards.length;
+    if (cards.length > 0) {
+      const mouseY = e.clientY;
+      for (let i = 0; i < cards.length; i++) {
+        const rect = cards[i].getBoundingClientRect();
+        if (mouseY < rect.top + rect.height / 2) {
+          const cardId = cards[i].getAttribute('data-card-id');
+          const actualIdx = column.cards.findIndex(c => c.id === cardId);
+          insertIdx = actualIdx >= 0 ? actualIdx : i;
+          break;
+        }
+      }
+    }
+    // If dragging within same column, the dragged card is still in the list
+    // so insertion index needs adjusting
+    if (dragColumnId === column.id) {
+      const currentIdx = column.cards.findIndex(c => c.id === dragCardId);
+      if (currentIdx >= 0 && currentIdx > insertIdx) insertIdx++;
+    }
+    // Calculate Y position for the drop line relative to the container
+    let dropY = 0;
+    if (cards.length > 0 && insertIdx < cards.length) {
+      const cardEl = cards[insertIdx] as HTMLElement;
+      const containerRect = container.getBoundingClientRect();
+      dropY = cardEl.getBoundingClientRect().top - containerRect.top - 2;
+    } else if (cards.length > 0) {
+      const lastEl = cards[cards.length - 1] as HTMLElement;
+      const containerRect = container.getBoundingClientRect();
+      dropY = lastEl.getBoundingClientRect().bottom - containerRect.top;
+    }
+    setDragOverIndex({ index: insertIdx, y: dropY });
+  }, [dragCardId, dragColumnId, column]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    if (!dragCardId) return;
-    // Drop at end of column (virtualized — precise index not available)
-    onMove(dragCardId, column.id, column.cards.length);
+    if (!dragCardId || !dragOverIndex) return;
+    // Unpin if dropped below the pinned section
+    const draggedCard = column.cards.find(c => c.id === dragCardId);
+    const pinnedCount = column.cards.filter(c => c.pinned).length;
+    if (draggedCard?.pinned && dragOverIndex.index >= pinnedCount) {
+      togglePin(dragCardId);
+    }
+    onMove(dragCardId, column.id, dragOverIndex.index);
+    setDragOverIndex(null);
+    setJustDropped(true);
+    setTimeout(() => setJustDropped(false), 500);
     onDragEnd();
-  }, [dragCardId, column, onMove, onDragEnd]);
+  }, [dragCardId, dragOverIndex, column, onMove, onDragEnd]);
 
   return (
     <div
-      className={`flex-1 min-w-[288px] max-w-[36rem] flex-shrink-0 flex flex-col max-h-full rounded-xl border shadow-sm transition-colors ${
-        isDragOver && !isSource ? 'border-primary bg-primary-subtle/20' : 'border-border bg-background-subtle'
+      className={`relative flex-1 min-w-[288px] max-w-[36rem] flex-shrink-0 flex flex-col max-h-full rounded-xl border shadow-sm transition-all duration-200 ${
+        isDragOver && !isSource ? 'border-primary bg-primary-subtle/10 shadow-lg scale-[1.03]' : 
+        justDropped ? 'border-emerald-500 bg-emerald-500/5 shadow-md' :
+        isSource ? 'border-border-muted opacity-90' : 'border-border bg-background-subtle'
       }`}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
@@ -118,14 +172,20 @@ export default function ColumnView({
       </div>
 
       {/* Cards */}
+      {dragOverIndex !== null && showDropLine && (
+        <div
+          className="absolute left-2 right-4 h-0.5 bg-primary rounded-full z-10 pointer-events-none transition-all duration-100"
+          style={{ top: `${dragOverIndex.y}px` }}
+        />
+      )}
       {visibleCards.length === 0 ? (
-        <div className={`flex-1 flex flex-col items-center justify-center m-2 border-2 border-dashed rounded-lg transition-colors ${
-          isDragOver ? 'border-primary bg-primary-subtle/10' : 'border-border-muted'
+        <div className={`flex-1 flex flex-col items-center justify-center m-2 border-2 border-dashed rounded-lg transition-all duration-200 ${
+          showDropLine ? 'border-primary bg-primary-subtle/10 scale-[1.02]' : 'border-border-muted'
         }`}>
-          <p className={`text-xs font-medium ${isDragOver ? 'text-primary' : 'text-foreground-subtle'}`}>
-            {isDragOver ? 'Drop here' : isDoneColumn(column) ? 'Drag completed tasks here' : column.id.includes('progress') ? 'Move active tasks here' : 'Add your first task below'}
+          <p className={`text-xs font-medium ${showDropLine ? 'text-primary' : 'text-foreground-subtle'}`}>
+            {showDropLine ? 'Drop here' : isDoneColumn(column) ? 'Drag completed tasks here' : column.id.includes('progress') ? 'Move active tasks here' : 'Add your first task below'}
           </p>
-          {!isDragOver && (
+          {!showDropLine && (
             <p className="text-[10px] text-foreground-subtle mt-1">Press <kbd className="text-[9px] bg-background-muted border border-border-muted rounded px-1 py-px">N</kbd> to focus the input</p>
           )}
         </div>
@@ -150,6 +210,7 @@ export default function ColumnView({
                 onAddSubTask={onAddSubTask}
                 onEditSubTask={onEditSubTask}
                 onDeleteSubTask={onDeleteSubTask}
+                onTogglePin={() => togglePin(card.id)}
                 boardAssignees={boardAssignees}
                 onDragStart={() => onDragStart(card.id, column.id)}
                 onDragEnd={onDragEnd}

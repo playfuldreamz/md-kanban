@@ -20,6 +20,7 @@ interface ColumnListProps {
   onAddSubTask: (parentId: string, title: string, description?: string) => void;
   onEditSubTask: (parentId: string, childId: string, title: string, description: string) => void;
   onDeleteSubTask: (parentId: string, childId: string) => void;
+  togglePin: (cardId: string) => void;
   boardAssignees?: Record<string, { label: string; color: string; ring: string }>;
   dragCardId: string | null;
   dragColumnId: string | null;
@@ -30,7 +31,7 @@ interface ColumnListProps {
 export default function ColumnList({
   columns, showCompleted, priorities, onToggle, onDelete, onAdd, onEdit,
   onMove, onAddColumn, onDeleteColumn, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask,
-  boardAssignees, dragCardId, dragColumnId, onDragStart, onDragEnd,
+  togglePin, boardAssignees, dragCardId, dragColumnId, onDragStart, onDragEnd,
 }: ColumnListProps) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
@@ -68,6 +69,7 @@ export default function ColumnList({
             onAddSubTask={onAddSubTask}
             onEditSubTask={onEditSubTask}
             onDeleteSubTask={onDeleteSubTask}
+            togglePin={togglePin}
             boardAssignees={boardAssignees}
             dragCardId={dragCardId}
             dragColumnId={dragColumnId}

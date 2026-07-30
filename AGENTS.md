@@ -73,7 +73,16 @@ kanban-md/
 
 This is not optional. If a file is over 500 lines after your edits, you have violated this rule and must refactor before the work is considered done.
 
-### 1. UI testing before commit
+### 1. Ask clarifying questions before acting
+
+**Before writing any code**, confirm your understanding of what the user wants. If anything is unclear — the scope, the desired behavior, which file to change, edge cases — **ask first.** A two-sentence clarification can save a full rewrite. Never guess what the user means.
+
+When the user's request is ambiguous:
+1. State what you think they want in your own words
+2. List any assumptions you're making
+3. Ask for confirmation before proceeding
+
+### 2. UI testing before commit
 
 **Never commit UI changes without first telling the user how to test them in the browser.** Before committing, describe:
 1. What to look for (new button, changed behavior, visual indicator)
@@ -82,7 +91,7 @@ This is not optional. If a file is over 500 lines after your edits, you have vio
 
 Wait for the user to confirm the feature works before committing. If the user reports a bug, fix it and provide updated testing instructions. Only commit after explicit approval.
 
-### 2. Thoroughness before speed
+### 3. Thoroughness before speed
 
 **Never rush to finish a task.** Before writing any code:
 1. **Ask clarifying questions** — if anything is ambiguous, ask. Don't guess.
@@ -96,11 +105,11 @@ Wait for the user to confirm the feature works before committing. If the user re
 4. **Test the full user journey** — not just the happy path. Add, edit, save, refresh, re-open, check persistence.
 5. **Verify persistence** — if something is "saved", read the file to prove it.
 
-### 3. The file is ALWAYS the source of truth
+### 4. The file is ALWAYS the source of truth
 
 Never store state anywhere except the TODO.md file. The server keeps a parsed copy in memory for broadcasting, but every mutation writes through to the file. If the file write fails, the API returns 500 and the frontend reverts its optimistic update. There is no database, no cache file, no `.kanban-state.json`. The file is the database.
 
-### 4. Optimistic UI → API → File → WebSocket → Reconcile
+### 5. Optimistic UI → API → File → WebSocket → Reconcile
 
 Every mutation follows this exact chain:
 ```
@@ -115,11 +124,11 @@ User action
 
 The reconciliation step is critical. The server state always wins. If it differs from the optimistic state (due to a concurrent file edit), the optimistic update is discarded. This prevents drift between the browser and the file.
 
-### 5. Appica UI components ONLY for UI
+### 6. Appica UI components ONLY for UI
 
 Every visible element uses Appica UI components. No raw `<button>`, no raw `<input>`, no custom CSS classes beyond Tailwind utilities. The only exception is the drag-and-drop overlay (a semi-transparent clone of the dragged card), which uses raw divs for performance.
 
-### 6. No state library
+### 7. No state library
 
 A single `useReducer` in `BoardShell` holds all state. No Redux, Zustand, Jotai, or Context for board state. The reducer handles 9 action types:
 - `BOARD_SYNC` — replace entire state
@@ -132,15 +141,15 @@ A single `useReducer` in `BoardShell` holds all state. No Redux, Zustand, Jotai,
 - `SUBTASK_ADD` — add a child to a card
 - `SUBTASK_DELETE` — remove a child
 
-### 7. Dragging uses HTML5 DnD, not a library
+### 8. Dragging uses HTML5 DnD, not a library
 
 No `@dnd-kit`, no `react-beautiful-dnd`. HTML5 Drag and Drop API is sufficient for a single-user Kanban board. Touch support can use a small polyfill if needed, but mouse-first is acceptable for v1.
 
-### 8. The server is vanilla Node.js
+### 9. The server is vanilla Node.js
 
 No TypeScript on the server side. The server is split across three files (`server.js`, `lib/routes.js`, `lib/server-utils.js`), all under 250 lines each. Use JSDoc comments for editor intellisense. The client is TypeScript because React components benefit from prop types.
 
-### 9. Tests for parser are mandatory
+### 10. Tests for parser are mandatory
 
 The parser is the most critical piece — if it misparses, cards disappear. Minimum 20 test cases covering:
 - Every valid input format
@@ -150,7 +159,7 @@ The parser is the most critical piece — if it misparses, cards disappear. Mini
 - Round-trip fidelity
 - Minimal diff output
 
-### 10. Zero dependency on NoteAPP
+### 11. Zero dependency on NoteAPP
 
 This directory must be self-contained. It cannot import from `../../backend/` or `../../frontend/`. When extracted, it works standalone. The only shared artifact is the TODO.md format itself.
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { Button } from '@appica/ui-react/button';
-import { Trash, Pencil } from '@appica/icons-react';
+import { Trash, Pencil, Pinned, Pin } from '@appica/icons-react';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -30,11 +30,12 @@ interface KanbanCardProps {
   onEditSubTask?: (parentId: string, childId: string, title: string, description: string) => void;
   onDeleteSubTask?: (parentId: string, childId: string) => void;
   boardAssignees?: Record<string, { label: string; color: string; ring: string }>;
+  onTogglePin?: () => void;
   onDragStart?: () => void;
   onDragEnd?: () => void;
 }
 
-export default function KanbanCard({ card, isDragging, columnName, priorities, onToggle, onDelete, onEdit, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, boardAssignees, onDragStart, onDragEnd }: KanbanCardProps) {
+export default function KanbanCard({ card, isDragging, columnName, priorities, onToggle, onDelete, onEdit, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, boardAssignees, onTogglePin, onDragStart, onDragEnd }: KanbanCardProps) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -76,8 +77,9 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
           transition-shadow duration-150 hover:shadow-md
           ${card.done ? 'border-border-muted opacity-75' : 'border-border'}
           ${card.warning ? 'border-l-2 border-l-amber-500' : ''}
-          ${isDragging ? 'opacity-50 shadow-lg' : ''}
-          ${!editing && onDragStart ? 'cursor-grab active:cursor-grabbing' : ''}
+          ${isDragging ? 'opacity-50 scale-95 shadow-lg rotate-[0.5deg]' : ''}
+          ${!editing && onDragStart ? 'cursor-grab active:cursor-grabbing hover:shadow-md' : ''}
+          transition-all duration-150
         `}
         data-card-id={card.id}
         draggable={!editing && !!onDragStart}
@@ -151,6 +153,15 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
             )}
           </div>
 
+        <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={card.pinned ? 'Unpin' : 'Pin'}
+            className={`transition-opacity flex-shrink-0 -mr-1 -mt-0.5 ${card.pinned ? 'text-amber-500' : 'opacity-0 group-hover:opacity-100 text-foreground-muted'}`}
+            onClick={(e) => { e.stopPropagation(); onTogglePin?.(); }}
+          >
+            {card.pinned ? <Pinned className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
+          </Button>
           <Button
             variant="ghost"
             size="icon-sm"

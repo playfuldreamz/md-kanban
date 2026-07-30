@@ -140,6 +140,9 @@ export default function CommandPalette({ board, open, onClose, onSelect }: Comma
                         ↳ sub
                       </span>
                     )}
+                    {fc.card.pinned && (
+                      <span className="text-[10px] text-amber-500 flex-shrink-0" title="Pinned">📌</span>
+                    )}
                   </div>
                   {fc.card.description && (
                     <p className="text-xs text-foreground-muted mt-0.5 truncate">

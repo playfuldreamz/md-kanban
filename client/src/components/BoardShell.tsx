@@ -38,10 +38,11 @@ interface BoardShellProps {
   addSubTask: (parentId: string, title: string, description?: string) => void;
   editSubTask: (parentId: string, childId: string, title: string, description: string) => void;
   deleteSubTask: (parentId: string, childId: string) => void;
+  togglePin: (cardId: string) => void;
 }
 
 export default function BoardShell(props: BoardShellProps) {
-  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, addColumn, deleteColumn, undoDelete, doUndo, doRedo, canUndo, canRedo, files, currentFile, switchFile, toggleSubTask, addSubTask, editSubTask, deleteSubTask } = props;
+  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, addColumn, deleteColumn, undoDelete, doUndo, doRedo, canUndo, canRedo, files, currentFile, switchFile, toggleSubTask, addSubTask, editSubTask, deleteSubTask, togglePin } = props;
 
   const [dragCardId, setDragCardId] = useState<string | null>(null);
   const [dragColumnId, setDragColumnId] = useState<string | null>(null);
@@ -214,6 +215,7 @@ export default function BoardShell(props: BoardShellProps) {
           onAddSubTask={addSubTask}
           onEditSubTask={editSubTask}
           onDeleteSubTask={deleteSubTask}
+          togglePin={togglePin}
           boardAssignees={board.assignees}
           dragCardId={dragCardId}
           dragColumnId={dragColumnId}

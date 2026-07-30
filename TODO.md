@@ -45,28 +45,29 @@
 # kanban-md — Roadmap
 
 ## To Do
-- [!] **Demo: warning card** — This card uses - [!] syntax. Should show an amber left border in the UI. #polish
-- [ ] **Demo: due date** — This card has an upcoming due date. Should show a blue "Due Aug 15" badge. due:2026-08-15 #polish #critical
-- [ ] **Demo: overdue** — This card is past its due date. Should show a red "Overdue" badge. due:2025-01-15 #polish
-- [ ] **Demo: assignees** — This card has @alice and @bob assigned. Should show colored initial chips Ⓐ Ⓑ in the card. @alice @bob #polish
-- [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
-- [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical
 - [ ] **Board templates** — kanban-md init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 3-4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. #polish
 - [ ] **Export** — GET /api/board/export?format=json|csv. CSV for spreadsheet users. Optional static HTML export for sharing a snapshot. #polish
-- [ ] **Git integration (opt-in)** — --git flag that auto-commits TODO.md changes with meaningful messages (kanban-md: moved "Fix login" → In Progress). Respects user's git config. Off by default. #polish
 - [ ] **Column WIP limits** — Per-column Work-In-Progress limits (e.g. "In Progress" max 5). Column header turns amber when exceeded. Configured via @wip block in preamble. #polish
 - [ ] **E2E tests with Playwright** — Browser-based tests: open board → drag card → verify file on disk → verify WebSocket sync. Current test suite is solid (79 tests) but has no browser automation. #polish
 - [ ] **Due dates** — Parse due dates from card text (due:YYYY-MM-DD or 📅 YYYY-MM-DD) and show visual indicators. Overdue cards get a red badge. A "Due Soon" filter in the search palette. #critical
+- [ ] **Demo: due date** — This card has an upcoming due date. Should show a blue "Due Aug 15" badge. due:2026-08-15 #polish #critical
+- [ ] **Demo: assignees** — This card has @alice and @bob assigned. Should show colored initial chips Ⓐ Ⓑ in the card. @alice @bob #polish
+- [ ] **Git integration (opt-in)** — --git flag that auto-commits TODO.md changes with meaningful messages (kanban-md: moved "Fix login" → In Progress). Respects user's git config. Off by default. #polish
+- [ ] **Demo: overdue** — This card is past its due date. Should show a red "Overdue" badge. due:2025-01-15 #polish
+- [ ] **Card pinning** — Pin cards to the top of their column. Hover-revealed pin icon. Pinned cards sort above unpinned, most recently pinned first. Unpins on drag below pinned section. `<!-- pinned -->` comment in rawLine. #important
+  - [x] **Parser/writer** — recognize `<!-- pinned -->` in rawLine → `card.pinned`, append on serialize
+  - [x] **Server** — PUT /api/cards/:id accepts `{ pinned: true/false }`
+  - [x] **Reducer** — CARD_TOGGLE_PIN action + Card.pinned type
+  - [x] **Column.tsx** — sort pinned cards first, unpin on drop below pinned zone
+  - [x] **KanbanCard** — hover-revealed pin icon (Pinned/Pin from Appica), amber when active
+  - [x] **CommandPalette** — pin indicator (📌) in search results
+  - [x] **useBoard** — togglePin() mutation through API
+- [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
+- [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical
+- [ ] **Demo: warning card** — This card uses - [!] syntax. Should show an amber left border in the UI. #polish
 
 
 ## In Progress
-- [!] **Assignee support** — Parse @username mentions in descriptions via `@assignees` preamble config. Render as colored initial chips (Ⓐ Alice) in KanbanCard. Type `@username` in description to assign, quick-toggle in EditCardDialog. @important #important
-  - [x] **assignees plugin** — `lib/builtin/assignees.js`: extracts @username → card.assignees[], strips from display description
-  - [x] **Preamble config** — parser reads `@assignees` JSON for display names + colors, auto-colors unknown users
-  - [x] **KanbanCard** — render assignee initials chips next to tags, hover shows name via Tooltip
-  - [x] **EditCardDialog** — assignee section: type `@name` to add, quick-toggle buttons for known users
-  - [x] **card-utils** — `extractAssignees()`, `getAssigneeDef()`, `formatInitials()` helpers
-  - [x] **Types/docs** — `assignees?: string[]` on Card, HelpDialog/README/FORMAT_GUIDE updated
 
 
 ## Done
@@ -74,6 +75,10 @@
   - [x] **CommandPalette** — modal overlay with search input, flattened card list, highlight matching text, keyboard navigation
   - [x] **BoardShell** — Cmd+K listener, onSelect scrolls to card with brief ring highlight
   - [x] **flattenBoard** — recursively flattens all cards and sub-tasks into searchable list
+- [x] **Markdown rendering in descriptions** — Render inline markdown in card descriptions: [links](url), `code`, *italic*, **bold**. Zero format change — TODO.md is already markdown. #critical <!-- pinned -->
+  - [x] **renderInline()** — tiny markdown→HTML converter: bold, italic, code, links. Escape-then-render — safe by construction.
+  - [x] **KanbanCard** — swap plain text `<p>` for rendered HTML via dangerouslySetInnerHTML
+  - [x] **Tests** — 8 test cases: bold, italic, code, links, HTML escaping, mixed, plain, empty
 - [x] **Card creation date** — Track when a card was created via HTML comment in rawLine. Parser ignores HTML comments so they survive round-trips. UI shows "Created 3 days ago" on hover. #polish
   - [x] **Parser** — extract createdAt from <!-- created:YYYY-MM-DD --> comment, strip from description
   - [x] **Writer** — append createdAt comment when serializing changed cards
@@ -81,10 +86,13 @@
   - [x] **Types** — added createdAt?: string to Card interface
   - [x] **UI** — formatCreatedDate() shows relative dates, native tooltip on hover
   - [x] **Tests** — 3 parser tests (extraction, missing, no desc), 2 writer tests (round-trip, changed)
-- [x] **Markdown rendering in descriptions** — Render inline markdown in card descriptions: [links](url), `code`, *italic*, **bold**. Zero format change — TODO.md is already markdown. #critical
-  - [x] **renderInline()** — tiny markdown→HTML converter: bold, italic, code, links. Escape-then-render — safe by construction.
-  - [x] **KanbanCard** — swap plain text `<p>` for rendered HTML via dangerouslySetInnerHTML
-  - [x] **Tests** — 8 test cases: bold, italic, code, links, HTML escaping, mixed, plain, empty
+- [!] **Assignee support** — Parse @username mentions in descriptions via `@assignees` preamble config. Render as colored initial chips (Ⓐ Alice) in KanbanCard. Type `@username` in description to assign, quick-toggle in EditCardDialog. @important #important
+  - [x] **assignees plugin** — `lib/builtin/assignees.js`: extracts @username → card.assignees[], strips from display description
+  - [x] **Preamble config** — parser reads `@assignees` JSON for display names + colors, auto-colors unknown users
+  - [x] **KanbanCard** — render assignee initials chips next to tags, hover shows name via Tooltip
+  - [x] **EditCardDialog** — assignee section: type `@name` to add, quick-toggle buttons for known users
+  - [x] **card-utils** — `extractAssignees()`, `getAssigneeDef()`, `formatInitials()` helpers
+  - [x] **Types/docs** — `assignees?: string[]` on Card, HelpDialog/README/FORMAT_GUIDE updated
 - [x] **Sub-tasks (nested checkboxes)** — Indented - [ ] lines parse as children of parent cards. Render as collapsible list with progress badge (2/5). Unlimited nesting depth in data model; UI renders up to 4 visual levels. #critical
   - [x] **Parser** — indent-level tracking via cardStack, recursive resolveDuplicateIds
   - [x] **Writer** — recursive serializeCard with indentation, cardHasChanged handles indented rawLines

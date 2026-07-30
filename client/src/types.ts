@@ -9,6 +9,7 @@ export interface Card {
   createdAt?: string;
   dueDate?: string;
   warning?: boolean;
+  pinned?: boolean;
   assignees?: string[];
   children?: Card[];
   _changed?: boolean;

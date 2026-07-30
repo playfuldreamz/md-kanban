@@ -124,6 +124,24 @@ export function useBoard() {
     [board, apiBase],
   );
 
+  /** Toggle pin state on a card. */
+  const togglePin = useCallback(
+    async (cardId: string) => {
+      userDispatch({ type: 'CARD_TOGGLE_PIN', cardId });
+      try {
+        const card = findCard(board, cardId);
+        if (card) {
+          await fetch(apiUrl(`/api/cards/${cardId}`), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pinned: !card.pinned }),
+          });
+        }
+      } catch {}
+    },
+    [board, apiUrl],
+  );
+
   const addCard = useCallback(
     async (columnId: string, title: string, description: string) => {
       try {
@@ -400,6 +418,7 @@ export function useBoard() {
     addSubTask,
     editSubTask,
     deleteSubTask,
+    togglePin,
     doUndo,
     doRedo,
     canUndo,

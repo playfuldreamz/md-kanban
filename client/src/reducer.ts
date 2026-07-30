@@ -12,7 +12,8 @@ export type BoardAction =
   | { type: 'SUBTASK_TOGGLE'; parentId: string; childId: string }
   | { type: 'SUBTASK_ADD'; parentId: string; title: string; description?: string }
   | { type: 'SUBTASK_EDIT'; parentId: string; childId: string; title: string; description: string }
-  | { type: 'SUBTASK_DELETE'; parentId: string; childId: string };
+  | { type: 'SUBTASK_DELETE'; parentId: string; childId: string }
+  | { type: 'CARD_TOGGLE_PIN'; cardId: string };
 
 // ─── Reducer ───────────────────────────────────────────────────────────────
 
@@ -72,10 +73,12 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
       const targetColumn = state.columns.find((c) => c.id === action.toColumnId);
       const toDone = isDoneColumn(targetColumn);
       const fromDone = isDoneColumn(sourceColumn);
-      if (toDone && !fromDone) {
-        movedCard = setDoneRecursive(movedCard, true);
-      } else if (!toDone && fromDone) {
-        movedCard = setDoneRecursive(movedCard, false);
+      if (!(movedCard as Card).warning) {
+        if (toDone && !fromDone) {
+          movedCard = setDoneRecursive(movedCard, true);
+        } else if (!toDone && fromDone) {
+          movedCard = setDoneRecursive(movedCard, false);
+        }
       }
 
       // Insert into target
@@ -121,6 +124,14 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
           cards: col.cards.filter((c) => c.id !== action.cardId),
         })),
       };
+    }
+
+    case 'CARD_TOGGLE_PIN': {
+      return mapCard(state, action.cardId, (card) => ({
+        ...card,
+        pinned: !card.pinned,
+        _changed: true,
+      }));
     }
 
     case 'SUBTASK_TOGGLE': {
