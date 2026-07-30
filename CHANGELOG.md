@@ -2,6 +2,17 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- docs: mark plugin system sub-tasks as complete, clean stray sub-task
+  
+  7 of 8 sub-tasks done. Docs update (HelpDialog/README) remains.
+- docs: mark plugin system sub-tasks done, clean stray sub-task
+- docs: plugin system docs in HelpDialog, README, design.md
+  
+  HelpDialog: added Plugins feature row with AlertTriangle icon.
+  README: new Plugins section under Schema with built-in plugin
+  table and custom plugin directory docs.
+  design.md: Plugin system pattern with code example.
+  TODO.md: all 8 plugin sub-tasks marked complete.
 - fix: warning toggle now works end-to-end + quick-add tag input
   
   Warning toggle was setting state but never sending it to the server.
