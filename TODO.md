@@ -43,13 +43,11 @@
 - [ ] **Assignee support** — Parse @username in descriptions and render as name chips. Purely a display convention. @assignees block in preamble maps usernames → display names + colors. #important
 - [ ] **Board templates** — kanban-md init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 3-4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. #polish
 - [ ] **Export** — GET /api/board/export?format=json|csv. CSV for spreadsheet users. Optional static HTML export for sharing a snapshot. #polish
-- [ ] **Virtual scrolling for large boards** — Wrap card list in a virtualized container for 100+ card boards. Check if Appica UI ships a virtual list component first. #polish
 - [ ] **Git integration (opt-in)** — --git flag that auto-commits TODO.md changes with meaningful messages (kanban-md: moved "Fix login" → In Progress). Respects user's git config. Off by default. #polish
 - [ ] **Column WIP limits** — Per-column Work-In-Progress limits (e.g. "In Progress" max 5). Column header turns amber when exceeded. Configured via @wip block in preamble. #polish
 - [ ] **Server-side TypeScript** — The "vanilla Node.js" rule should be revisited once the codebase stabilizes. JSDoc types are already in use; adopting TS would improve editor support and catch bugs. #polish
 - [ ] **E2E tests with Playwright** — Browser-based tests: open board → drag card → verify file on disk → verify WebSocket sync. Current test suite is solid (79 tests) but has no browser automation. #polish
 - [ ] **Plugin system for parser extensions** — Allow custom line parsers (e.g. - [!] **Title** as a warning card with special styling). The modular parser architecture already supports this pattern. #polish
-- [ ] **asfsfaf** <!-- created:2026-07-30 -->
 
 
 ## In Progress
@@ -86,3 +84,6 @@
   - [x] **useUndoRedo** — ref-based ring buffer, useState flags for reactivity, deep-clones states
   - [x] **useBoard** — userDispatch wraps all user actions with pushState, doUndo/doRedo dispatch BOARD_SYNC
   - [x] **BoardShell** — undo/redo buttons in header, keyboard shortcut listeners
+- [x] **Virtual scrolling for large boards** — Lightweight custom VirtualCardList with ResizeObserver-measured heights. Only activates above 30 cards; below threshold renders normally. #polish
+  - [x] **VirtualCardList** — renders only visible cards + 5 overscan, measures actual heights via ResizeObserver
+  - [x] **Column.tsx** — replaces flat card map with VirtualCardList, simplified drag-drop to column-level

@@ -1,10 +1,11 @@
-import { useState, useRef, useCallback } from 'react';
+import { useCallback } from 'react';
 import { Badge } from '@appica/ui-react/badge';
 import { Button } from '@appica/ui-react/button';
 import { ClipboardCheck, Clock, CircleCheck, LayoutKanban, AlertTriangle, Sparkles, Trash } from '@appica/icons-react';
 import type { Column } from '../types';
 import KanbanCard from './KanbanCard';
 import AddCardForm from './AddCardForm';
+import VirtualCardList from './VirtualCardList';
 
 // Map column IDs/names to Appica icons — with priority-aware coloring
 function columnIcon(col: Column): { icon: React.ReactNode; priority: string | null } {
@@ -59,12 +60,9 @@ export default function ColumnView({
   onMove, onDeleteColumn, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask,
   dragCardId, dragColumnId, onDragStart, onDragEnd,
 }: ColumnViewProps) {
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const cardListRef = useRef<HTMLDivElement>(null);
-
   const { icon, priority: colPriority } = columnIcon(column);
 
-  const isDragOver = dragCardId !== null && dragOverIndex !== null;
+  const isDragOver = dragCardId !== null && dragColumnId !== column.id;
   const isSource = dragCardId !== null && dragColumnId === column.id;
   const isMandatory = column.id.includes('to-do') || column.name.toLowerCase().includes('to do') ||
     column.id.includes('progress') || column.name.toLowerCase().includes('progress') ||
@@ -74,31 +72,15 @@ export default function ColumnView({
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    if (!cardListRef.current || !dragCardId) return;
-    const cards = cardListRef.current.querySelectorAll('[data-card-id]');
-    if (cards.length === 0) { setDragOverIndex(0); return; }
-    const mouseY = e.clientY;
-    let insertIndex = cards.length;
-    for (let i = 0; i < cards.length; i++) {
-      const rect = cards[i].getBoundingClientRect();
-      if (mouseY < rect.top + rect.height / 2) { insertIndex = i; break; }
-    }
-    setDragOverIndex(insertIndex);
-  }, [dragCardId]);
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    if (!dragCardId || dragOverIndex === null) return;
-    const currentIndex = column.cards.findIndex(c => c.id === dragCardId);
-    if (dragColumnId === column.id && currentIndex === dragOverIndex) { setDragOverIndex(null); return; }
-    if (dragColumnId === column.id && currentIndex < dragOverIndex) {
-      onMove(dragCardId, column.id, dragOverIndex - 1);
-    } else {
-      onMove(dragCardId, column.id, dragOverIndex);
-    }
-    setDragOverIndex(null);
+    if (!dragCardId) return;
+    // Drop at end of column (virtualized — precise index not available)
+    onMove(dragCardId, column.id, column.cards.length);
     onDragEnd();
-  }, [dragCardId, dragOverIndex, dragColumnId, column, onMove, onDragEnd]);
+  }, [dragCardId, column, onMove, onDragEnd]);
 
   return (
     <div
@@ -107,7 +89,6 @@ export default function ColumnView({
       }`}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      onDragLeave={(e) => { if (e.currentTarget === e.target) setDragOverIndex(null); }}
     >
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border flex-shrink-0 group">
@@ -130,42 +111,42 @@ export default function ColumnView({
       </div>
 
       {/* Cards */}
-      <div ref={cardListRef} className="flex-1 overflow-y-auto p-2 pr-4 space-y-1.5">
-        {visibleCards.length === 0 && (
-          <div className={`h-20 flex items-center justify-center border-2 border-dashed rounded-lg transition-colors ${
-            isDragOver ? 'border-primary bg-primary-subtle/10' : 'border-border-muted'
-          }`}>
-            <p className={`text-xs ${isDragOver ? 'text-primary' : 'text-foreground-subtle'}`}>
-              {isDragOver ? 'Drop here' : 'No tasks'}
-            </p>
-          </div>
-        )}
-        {visibleCards.map((card, index) => (
-          <div key={card.id}>
-            {dragOverIndex === index && dragCardId !== card.id && (
-              <div className="h-0.5 bg-primary rounded-full mx-1 mb-1" />
-            )}
-            <KanbanCard
-              card={card}
-              columnName={column.name}
-              priorities={priorities}
-              isDragging={dragCardId === card.id}
-              onToggle={() => onToggle(card.id)}
-              onDelete={() => onDelete(card.id)}
-              onEdit={onEdit}
-              onToggleSubTask={onToggleSubTask}
-              onAddSubTask={onAddSubTask}
-              onEditSubTask={onEditSubTask}
-              onDeleteSubTask={onDeleteSubTask}
-              onDragStart={() => onDragStart(card.id, column.id)}
-              onDragEnd={onDragEnd}
-            />
-          </div>
-        ))}
-        {dragOverIndex === visibleCards.length && visibleCards.length > 0 && (
-          <div className="h-0.5 bg-primary rounded-full mx-1 mt-1" />
-        )}
-      </div>
+      {visibleCards.length === 0 ? (
+        <div className={`flex-1 flex items-center justify-center m-2 border-2 border-dashed rounded-lg transition-colors ${
+          isDragOver ? 'border-primary bg-primary-subtle/10' : 'border-border-muted'
+        }`}>
+          <p className={`text-xs ${isDragOver ? 'text-primary' : 'text-foreground-subtle'}`}>
+            {isDragOver ? 'Drop here' : 'No tasks'}
+          </p>
+        </div>
+      ) : (
+        <VirtualCardList
+          items={visibleCards}
+          itemKey={(card) => card.id}
+          estimatedItemHeight={90}
+          threshold={30}
+          className="flex-1 overflow-y-auto p-2 pr-4"
+          renderItem={(card) => (
+            <div className="pb-1.5">
+              <KanbanCard
+                card={card}
+                columnName={column.name}
+                priorities={priorities}
+                isDragging={dragCardId === card.id}
+                onToggle={() => onToggle(card.id)}
+                onDelete={() => onDelete(card.id)}
+                onEdit={onEdit}
+                onToggleSubTask={onToggleSubTask}
+                onAddSubTask={onAddSubTask}
+                onEditSubTask={onEditSubTask}
+                onDeleteSubTask={onDeleteSubTask}
+                onDragStart={() => onDragStart(card.id, column.id)}
+                onDragEnd={onDragEnd}
+              />
+            </div>
+          )}
+        />
+      )}
 
       {/* Add card */}
       <AddCardForm columnId={column.id} columnName={column.name} onAdd={onAdd} />

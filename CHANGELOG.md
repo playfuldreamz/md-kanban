@@ -2,6 +2,21 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: undo/redo stack with visible header buttons and keyboard shortcuts
+  
+  useUndoRedo hook: ring buffer of 20 board snapshots. useState flags
+  for reactivity (was dead refs — buttons were always grayed out).
+  Deep-clones states so mutations don't corrupt history.
+  
+  useBoard: userDispatch wraps all user actions with pushState;
+  doUndo/doRedo dispatch BOARD_SYNC with restored state.
+  
+  BoardShell: undo/redo arrow buttons in header bar with disabled
+  state. Ctrl+Z undo, Ctrl+Shift+Z/Ctrl+Y redo.
+  
+  AGENTS.md: new Rule 1 — UI testing before commit. Describe what
+  to look for, actions to take, expected results. Wait for explicit
+  approval before committing.
 - fix: use custom hover-revealed date label instead of browser title tooltip
   
   Card and sub-task creation dates now appear as subtle text that fades
