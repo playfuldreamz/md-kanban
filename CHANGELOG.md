@@ -2,6 +2,14 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- chore: bump to 0.1.53
+- feat: responsive column widths — auto-fit to viewport
+  
+  Columns now use flex-1 with min-w-[288px] and max-w-[42rem] instead
+  of fixed w-[42rem]. They divide available space evenly, shrink when
+  new columns are added, and the container scrolls horizontally when
+  the min width is reached. Removed justify-center so columns flow
+  left-to-right.
 - fix: add missing lib files to npm package, bump to 0.1.52
   
   'files' array in package.json was missing routes.js, server-utils.js,
