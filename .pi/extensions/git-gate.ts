@@ -100,8 +100,22 @@ export default function (pi: ExtensionAPI) {
       return { block: true, reason: "git commit/push blocked (headless mode)." };
     }
 
-    const ok = await ctx.ui.confirm("Git write operation", `Allow?\n\n  ${command}`);
-    if (!ok) return { block: true, reason: "git commit/push blocked by user" };
+    const choice = await ctx.ui.select(
+      `Git write operation:\n  ${command.slice(0, 120)}${command.length > 120 ? "..." : ""}`,
+      ["Approve", "Block", "Send feedback →"],
+    );
+
+    if (!choice || choice === "Block") {
+      return { block: true, reason: "git commit/push blocked by user" };
+    }
+
+    if (choice === "Send feedback →") {
+      const feedback = await ctx.ui.input("Send feedback to the model:");
+      if (!feedback) {
+        return { block: true, reason: "git commit/push blocked by user" };
+      }
+      return { block: true, reason: feedback };
+    }
 
     // On push: flush accumulated commit messages to changelog
     if (GIT_PUSH_PATTERN.test(command)) {

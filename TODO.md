@@ -1,7 +1,7 @@
 <!--
   This file powers a live Kanban board (npx md-kanban).
 
-  @plugins due-dates, warning-cards
+  @plugins due-dates, warning-cards, assignees
 
   STRUCTURE:
     ## To Do
@@ -29,6 +29,9 @@
     due-dates: parse due:YYYY-MM-DD in descriptions → colored badge
     warning-cards: - [!] syntax → amber left border
 
+  ASSIGNEES (@username renders as initial chips):
+    @alice  @bob — mention people in descriptions
+
   RULES FOR AI AGENTS:
   • Every task MUST start with "- [ ]" or "- [x]" at the beginning of the line
   • Bold the title with **double asterisks**
@@ -45,9 +48,9 @@
 - [!] **Demo: warning card** — This card uses - [!] syntax. Should show an amber left border in the UI. #polish
 - [ ] **Demo: due date** — This card has an upcoming due date. Should show a blue "Due Aug 15" badge. due:2026-08-15 #polish #critical
 - [ ] **Demo: overdue** — This card is past its due date. Should show a red "Overdue" badge. due:2025-01-15 #polish
+- [ ] **Demo: assignees** — This card has @alice and @bob assigned. Should show colored initial chips Ⓐ Ⓑ in the card. @alice @bob #polish
 - [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
 - [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical
-- [ ] **Assignee support** — Parse @username in descriptions and render as name chips. Purely a display convention. @assignees block in preamble maps usernames → display names + colors. #important
 - [ ] **Board templates** — kanban-md init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 3-4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. #polish
 - [ ] **Export** — GET /api/board/export?format=json|csv. CSV for spreadsheet users. Optional static HTML export for sharing a snapshot. #polish
 - [ ] **Git integration (opt-in)** — --git flag that auto-commits TODO.md changes with meaningful messages (kanban-md: moved "Fix login" → In Progress). Respects user's git config. Off by default. #polish
@@ -57,6 +60,13 @@
 
 
 ## In Progress
+- [!] **Assignee support** — Parse @username mentions in descriptions via `@assignees` preamble config. Render as colored initial chips (Ⓐ Alice) in KanbanCard. Type `@username` in description to assign, quick-toggle in EditCardDialog. @important #important
+  - [x] **assignees plugin** — `lib/builtin/assignees.js`: extracts @username → card.assignees[], strips from display description
+  - [x] **Preamble config** — parser reads `@assignees` JSON for display names + colors, auto-colors unknown users
+  - [x] **KanbanCard** — render assignee initials chips next to tags, hover shows name via Tooltip
+  - [x] **EditCardDialog** — assignee section: type `@name` to add, quick-toggle buttons for known users
+  - [x] **card-utils** — `extractAssignees()`, `getAssigneeDef()`, `formatInitials()` helpers
+  - [x] **Types/docs** — `assignees?: string[]` on Card, HelpDialog/README/FORMAT_GUIDE updated
 
 
 ## Done

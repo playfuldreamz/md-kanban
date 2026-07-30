@@ -6,6 +6,12 @@ export interface TagDef {
   ring: string;
 }
 
+export interface AssigneeDef {
+  label: string;
+  color: string;
+  ring: string;
+}
+
 export const PRIORITY_MAP: Record<string, TagDef> = {
   critical: { label: 'Critical', color: 'bg-red-500', ring: 'ring-red-500/30' },
   important: { label: 'Important', color: 'bg-amber-500', ring: 'ring-amber-500/30' },
@@ -117,4 +123,53 @@ export function formatDueDate(dueDate: string): string {
   if (diffDays === 1) return 'Due tomorrow';
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return `Due ${months[due.getMonth()]} ${due.getDate()}`;
+}
+
+// ─── Assignee helpers ──────────────────────────────────────────────────
+
+/** 16-color palette for auto-assigning unknown users (different from tags). */
+const ASSIGNEE_PALETTE = [
+  { color: 'bg-pink-500', ring: 'ring-pink-500/30' },
+  { color: 'bg-blue-500', ring: 'ring-blue-500/30' },
+  { color: 'bg-teal-500', ring: 'ring-teal-500/30' },
+  { color: 'bg-orange-500', ring: 'ring-orange-500/30' },
+  { color: 'bg-indigo-500', ring: 'ring-indigo-500/30' },
+  { color: 'bg-lime-500', ring: 'ring-lime-500/30' },
+  { color: 'bg-rose-500', ring: 'ring-rose-500/30' },
+  { color: 'bg-cyan-500', ring: 'ring-cyan-500/30' },
+];
+
+/** Get or create an assignee definition. */
+export function getAssigneeDef(
+  username: string,
+  assignees?: Record<string, AssigneeDef>,
+): AssigneeDef {
+  if (assignees?.[username]) return assignees[username];
+  const p = ASSIGNEE_PALETTE[hashStr(username) % ASSIGNEE_PALETTE.length];
+  return { label: username.charAt(0).toUpperCase() + username.slice(1), ...p };
+}
+
+/** Extract @usernames from description text and return their definitions. */
+export function extractAssignees(
+  text: string,
+  assignees?: Record<string, AssigneeDef>,
+): { username: string; def: AssigneeDef }[] {
+  const matches = text.match(/@([a-zA-Z0-9_-]+)/g);
+  if (!matches) return [];
+  const seen = new Set<string>();
+  const results: { username: string; def: AssigneeDef }[] = [];
+  for (const m of matches) {
+    const u = m.slice(1).toLowerCase();
+    if (seen.has(u)) continue;
+    seen.add(u);
+    results.push({ username: u, def: getAssigneeDef(u, assignees) });
+  }
+  return results;
+}
+
+/** Get initials from a name (max 2 chars). "Alice" → "AL", "Bob Jones" → "BJ". */
+export function formatInitials(name: string): string {
+  const parts = name.split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
 }

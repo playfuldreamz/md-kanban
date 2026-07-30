@@ -10,8 +10,8 @@ import {
 import { Input } from '@appica/ui-react/input';
 import { Button } from '@appica/ui-react/button';
 import { AlertTriangle } from '@appica/icons-react';
-import { extractTags, getTagDef } from './card-utils';
-import type { TagDef } from './card-utils';
+import { extractTags, getTagDef, extractAssignees, getAssigneeDef, formatInitials } from './card-utils';
+import type { TagDef, AssigneeDef } from './card-utils';
 
 interface EditCardDialogProps {
   open: boolean;
@@ -19,17 +19,19 @@ interface EditCardDialogProps {
   description: string;
   dueDate?: string;
   warning?: boolean;
+  assignees?: Record<string, AssigneeDef>;
   priorities: Record<string, TagDef>;
   onSave: (title: string, description: string, dueDate?: string, warning?: boolean) => void;
   onClose: () => void;
 }
 
-export default function EditCardDialog({ open, title, description, dueDate, warning, priorities, onSave, onClose }: EditCardDialogProps) {
+export default function EditCardDialog({ open, title, description, dueDate, warning, assignees, priorities, onSave, onClose }: EditCardDialogProps) {
   const [editTitle, setEditTitle] = useState(title);
   const [editDesc, setEditDesc] = useState(description);
   const [editDueDate, setEditDueDate] = useState(dueDate || '');
   const [editWarning, setEditWarning] = useState(warning || false);
   const [customTagInput, setCustomTagInput] = useState('');
+  const [assigneeInput, setAssigneeInput] = useState('');
 
   useEffect(() => {
     if (!open) return;
@@ -58,6 +60,19 @@ export default function EditCardDialog({ open, title, description, dueDate, warn
   const activeTags = new Set(existingTags.map((t) => t.tag));
   const priorityTagSet = new Set(Object.keys(priorities));
   const allToggleTags = [...new Set([...priorityTagSet, ...activeTags])];
+
+  const toggleAssignee = (username: string) => {
+    if (editDesc.includes(`@${username}`)) {
+      setEditDesc(editDesc.replace(new RegExp('\\s*@' + username + '\\s*', 'g'), ' ').replace(/\s+/g, ' ').trim());
+    } else {
+      setEditDesc((editDesc + ' @' + username).trim());
+    }
+  };
+
+  const existingAssignees = extractAssignees(editDesc, assignees);
+  const knownAssignees = assignees ? Object.keys(assignees) : [];
+  const activeUsernames = new Set(existingAssignees.map((a) => a.username));
+  const allAssigneeUsers = [...new Set([...knownAssignees, ...activeUsernames])];
 
   return (
     <AlertDialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
@@ -110,6 +125,49 @@ export default function EditCardDialog({ open, title, description, dueDate, warn
               </button>
             </div>
           </div>
+
+          {/* Assignees */}
+          {allAssigneeUsers.length > 0 && (
+            <div>
+              <label className="text-xs font-medium text-foreground-muted block mb-2">Assignees</label>
+              <div className="flex flex-wrap gap-2">
+                {allAssigneeUsers.map((username) => {
+                  const def = getAssigneeDef(username, assignees);
+                  const isActive = activeUsernames.has(username);
+                  return (
+                    <button
+                      key={username}
+                      onClick={() => toggleAssignee(username)}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                        isActive
+                          ? 'border-primary bg-primary-subtle text-primary'
+                          : 'border-border text-foreground-muted hover:border-border-strong hover:text-foreground'
+                      }`}
+                    >
+                      <span className={`inline-flex items-center justify-center w-4 h-4 rounded-full text-[8px] font-bold text-white ${def.color}`}>
+                        {formatInitials(def.label)}
+                      </span>
+                      {def.label}
+                    </button>
+                  );
+                })}
+                <input
+                  type="text"
+                  value={assigneeInput}
+                  onChange={(e) => setAssigneeInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && assigneeInput.trim()) {
+                      toggleAssignee(assigneeInput.trim().toLowerCase().replace(/[^a-z0-9_-]/g, ''));
+                      setAssigneeInput('');
+                    }
+                    if (e.key === 'Escape') setAssigneeInput('');
+                  }}
+                  placeholder="@ name"
+                  className="w-20 text-xs bg-background border border-dashed border-border-muted rounded px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-foreground-subtle"
+                />
+              </div>
+            </div>
+          )}
 
           {allToggleTags.length > 0 && (
             <div>

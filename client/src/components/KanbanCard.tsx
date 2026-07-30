@@ -12,7 +12,7 @@ import {
 } from '@appica/ui-react/alert-dialog';
 import EditCardDialog from './EditCardDialog';
 import { renderInline } from '../lib/markdown';
-import { PRIORITY_MAP, formatCreatedDate, extractTags, getDueColor, formatDueDate } from './card-utils';
+import { PRIORITY_MAP, formatCreatedDate, extractTags, getDueColor, formatDueDate, extractAssignees, formatInitials } from './card-utils';
 import { SubTaskSection } from './SubTaskList';
 import Tooltip from './Tooltip';
 import type { Card } from '../types';
@@ -29,11 +29,12 @@ interface KanbanCardProps {
   onAddSubTask?: (parentId: string, title: string, description?: string) => void;
   onEditSubTask?: (parentId: string, childId: string, title: string, description: string) => void;
   onDeleteSubTask?: (parentId: string, childId: string) => void;
+  boardAssignees?: Record<string, { label: string; color: string; ring: string }>;
   onDragStart?: () => void;
   onDragEnd?: () => void;
 }
 
-export default function KanbanCard({ card, isDragging, columnName, priorities, onToggle, onDelete, onEdit, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, onDragStart, onDragEnd }: KanbanCardProps) {
+export default function KanbanCard({ card, isDragging, columnName, priorities, onToggle, onDelete, onEdit, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, boardAssignees, onDragStart, onDragEnd }: KanbanCardProps) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -42,6 +43,9 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
   const inputRef = useRef<HTMLInputElement>(null);
   const propsPriorities = priorities;
   const tags = extractTags(card.description || columnName || '', propsPriorities);
+  const assigneeDefs = card.assignees
+    ? card.assignees.map((u) => ({ username: u, def: { label: u.charAt(0).toUpperCase() + u.slice(1), color: 'bg-foreground-muted', ring: '' } }))
+    : extractAssignees(card.description || '', (propsPriorities as any));
 
   const startEdit = useCallback(() => {
     if (!onEdit) return;
@@ -113,7 +117,7 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
               />
             )}
             {/* Tags + creation date */}
-            {(tags.length > 0 || card.createdAt || card.dueDate) && (
+            {(tags.length > 0 || card.createdAt || card.dueDate || assigneeDefs.length > 0) && (
               <div className="flex items-center justify-between mt-1.5 gap-2">
                 <div className="flex items-center gap-1 flex-wrap">
                   {card.dueDate && (
@@ -121,6 +125,13 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
                       {formatDueDate(card.dueDate)}
                     </span>
                   )}
+                  {assigneeDefs.map(({ username, def }) => (
+                    <Tooltip key={username} label={def.label} placement="top">
+                      <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[9px] font-bold text-white cursor-default ${def.color}`}>
+                        {formatInitials(def.label)}
+                      </span>
+                    </Tooltip>
+                  ))}
                   {tags.map(({ tag, def }) => (
                     <Tooltip key={tag} label={def.label} placement="top">
                       <span
@@ -202,6 +213,7 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
         description={card.description}
         dueDate={card.dueDate}
         warning={card.warning}
+        assignees={boardAssignees}
         priorities={priorities || PRIORITY_MAP}
         onSave={(newTitle, newDesc, newDueDate, newWarning) => {
           if (onEdit) onEdit(card.id, newTitle, newDesc, newDueDate, newWarning);

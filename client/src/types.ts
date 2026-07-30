@@ -9,6 +9,7 @@ export interface Card {
   createdAt?: string;
   dueDate?: string;
   warning?: boolean;
+  assignees?: string[];
   children?: Card[];
   _changed?: boolean;
 }
@@ -24,6 +25,7 @@ export interface BoardState {
   title: string;
   preamble?: string;
   priorities?: Record<string, { label: string; color: string; ring: string }>;
+  assignees?: Record<string, { label: string; color: string; ring: string }>;
   columns: Column[];
 }
 

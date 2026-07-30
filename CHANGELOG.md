@@ -2,6 +2,17 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- fix: remove max-w cap — columns fill screen evenly at all sizes
+  
+  flex-1 with min-w-[288px] only. Small screens: columns shrink to 288px
+  then scroll. Large screens: columns divide space evenly, no dead zone.
+  Bump to 0.1.55.
+- fix: remove max-w cap, columns fill screen evenly. 0.1.55
+- fix: columns center on large screens with max-w-[36rem]
+  
+  flex-1 min-w-[288px] max-w-[36rem] with justify-center. Columns fill
+  evenly on laptops, max at 576px on monitors, center when they don't
+  fill the screen. Bump to 0.1.55.
 - fix: responsive columns fit viewport without scroll on 15\
 - chore: bump to 0.1.53
 - feat: responsive column widths — auto-fit to viewport

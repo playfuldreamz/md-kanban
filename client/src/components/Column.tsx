@@ -55,6 +55,7 @@ interface ColumnViewProps {
   onAddSubTask: (parentId: string, title: string, description?: string) => void;
   onEditSubTask: (parentId: string, childId: string, title: string, description: string) => void;
   onDeleteSubTask: (parentId: string, childId: string) => void;
+  boardAssignees?: Record<string, { label: string; color: string; ring: string }>;
   dragCardId: string | null;
   dragColumnId: string | null;
   onDragStart: (cardId: string, columnId: string) => void;
@@ -64,7 +65,7 @@ interface ColumnViewProps {
 export default function ColumnView({
   column, showCompleted, priorities, onToggle, onDelete, onAdd, onEdit,
   onMove, onDeleteColumn, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask,
-  dragCardId, dragColumnId, onDragStart, onDragEnd,
+  boardAssignees, dragCardId, dragColumnId, onDragStart, onDragEnd,
 }: ColumnViewProps) {
   const { icon, priority: colPriority } = columnIcon(column);
 
@@ -149,6 +150,7 @@ export default function ColumnView({
                 onAddSubTask={onAddSubTask}
                 onEditSubTask={onEditSubTask}
                 onDeleteSubTask={onDeleteSubTask}
+                boardAssignees={boardAssignees}
                 onDragStart={() => onDragStart(card.id, column.id)}
                 onDragEnd={onDragEnd}
               />

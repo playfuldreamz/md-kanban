@@ -36,7 +36,8 @@ const FEATURES = [
   { icon: ChevronRight, label: 'Sub-tasks', desc: 'Indent 2 spaces for nested checkboxes. Up to 4 visual levels with progress badges.' },
   { icon: Pencil, label: 'Tags', desc: 'Type #bug #feature #critical in descriptions — any #tag becomes a colored badge.' },
   { icon: Trash, label: 'Dates', desc: 'Cards auto-stamp creation dates. Hover any card or sub-task to see "Created 3 days ago".' },
-  { icon: AlertTriangle, label: 'Plugins', desc: 'Enable due-dates and warning-cards via @plugins in preamble. due:YYYY-MM-DD sets deadlines; - [!] marks warning cards.' },
+  { icon: AlertTriangle, label: 'Plugins', desc: 'Enable due-dates, warning-cards, and assignees via @plugins in preamble.' },
+  { icon: Pencil, label: 'Assignees', desc: 'Mention @username in descriptions — renders as colored initial chips (Ⓐ). Toggle in EditCardDialog.' },
 ];
 
 export default function HelpDialog({ open, onClose }: HelpDialogProps) {

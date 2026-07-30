@@ -216,6 +216,7 @@ Add `@plugins` to the preamble to enable extensions. Ships with two built-in plu
 |--------|--------|--------|
 | `due-dates` | `due:YYYY-MM-DD` in description | Colored badge: red overdue, amber today, blue upcoming. Date picker in EditCardDialog. |
 | `warning-cards` | `- [!] **Title**` | Amber left border on the card. Toggle in EditCardDialog. |
+| `assignees` | `@username` in description | Colored initial chips (Ⓐ). Auto-assigned colors. Toggle in EditCardDialog. |
 
 ```markdown
 <!--

@@ -214,6 +214,7 @@ export default function BoardShell(props: BoardShellProps) {
           onAddSubTask={addSubTask}
           onEditSubTask={editSubTask}
           onDeleteSubTask={deleteSubTask}
+          boardAssignees={board.assignees}
           dragCardId={dragCardId}
           dragColumnId={dragColumnId}
           onDragStart={(cardId, columnId) => {
