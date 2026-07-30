@@ -2,6 +2,16 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- refactor: split KanbanCard (571→222) into SubTaskList + card-utils
+  
+  Extracted to SubTaskList.tsx (232 lines):
+  - SubTaskSection, SubTaskItem, AddSubTaskInline components
+  - MAX_VISUAL_DEPTH constant, exported props interfaces
+  
+  Extracted to card-utils.ts:
+  - PRIORITY_MAP, formatCreatedDate, extractPriorities
+  
+  All files now under 500 lines. Rule 0 enforced.
 - feat: virtual scrolling for large card lists
   
   VirtualCardList component: renders only visible cards + 5 overscan.

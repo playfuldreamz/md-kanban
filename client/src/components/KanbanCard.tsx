@@ -13,7 +13,7 @@ import {
 } from '@appica/ui-react/alert-dialog';
 import EditCardDialog from './EditCardDialog';
 import { renderInline } from '../lib/markdown';
-import { PRIORITY_MAP, formatCreatedDate, extractPriorities } from './card-utils';
+import { PRIORITY_MAP, formatCreatedDate, extractTags } from './card-utils';
 import { SubTaskSection } from './SubTaskList';
 import type { Card } from '../types';
 
@@ -42,9 +42,7 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
   const [childrenOpen, setChildrenOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const propsPriorities = priorities;
-  const indicators = card.description
-    ? extractPriorities(card.description, propsPriorities)
-    : extractPriorities(columnName || '', propsPriorities);
+  const tags = extractTags(card.description || columnName || '', propsPriorities);
 
   const startEdit = useCallback(() => {
     if (!onEdit) return;
@@ -114,22 +112,22 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
                 dangerouslySetInnerHTML={{ __html: renderInline(card.description) }}
               />
             )}
-            {/* Priority dots + creation date */}
-            {(indicators.length > 0 || card.createdAt) && (
+            {/* Tags + creation date */}
+            {(tags.length > 0 || card.createdAt) && (
               <div className="flex items-center justify-between mt-1.5 gap-2">
-                <div className="flex items-center gap-1">
-                  {indicators.map((p, i) => (
-                    <div
-                      key={i}
-                      className="cursor-default"
+                <div className="flex items-center gap-1 flex-wrap">
+                  {tags.map(({ tag, def }) => (
+                    <span
+                      key={tag}
+                      className={`inline-flex items-center gap-1 px-1.5 py-px rounded text-[10px] font-medium text-white cursor-default ${def.color}`}
                       onMouseEnter={(e) => {
                         const rect = e.currentTarget.getBoundingClientRect();
-                        setTooltip({ x: rect.left + rect.width / 2, y: rect.top - 6, label: p.label });
+                        setTooltip({ x: rect.left + rect.width / 2, y: rect.top - 6, label: def.label });
                       }}
                       onMouseLeave={() => setTooltip(null)}
                     >
-                      <span className={`block w-2 h-2 rounded-full ${p.color} ring-1 ${p.ring}`} />
-                    </div>
+                      {def.label}
+                    </span>
                   ))}
                 </div>
                 {card.createdAt && (

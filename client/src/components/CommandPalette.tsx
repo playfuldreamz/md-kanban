@@ -3,6 +3,7 @@ import { Input } from '@appica/ui-react/input';
 import { Badge } from '@appica/ui-react/badge';
 import { Search, X } from '@appica/icons-react';
 import type { BoardState, Card, Column } from '../types';
+import { extractTags } from './card-utils';
 
 interface FlatCard {
   card: Card;
@@ -33,7 +34,7 @@ export default function CommandPalette({ board, open, onClose, onSelect }: Comma
           fc.card.title.toLowerCase().includes(q) ||
           fc.card.description.toLowerCase().includes(q) ||
           fc.column.name.toLowerCase().includes(q) ||
-          extractTags(fc.card.description).some((t) => t.includes(q))
+          extractTags(fc.card.description).some(({ tag }) => tag.includes(q))
         );
       })
     : [];
@@ -150,9 +151,9 @@ export default function CommandPalette({ board, open, onClose, onSelect }: Comma
                     <span className="text-[10px] text-foreground-subtle bg-background-muted rounded px-1">
                       {fc.column.name.replace(/^[^\w]*/, '')}
                     </span>
-                    {extractTags(fc.card.description).map((tag) => (
-                      <span key={tag} className="text-[10px] text-primary bg-primary-subtle rounded px-1">
-                        #{tag}
+                    {extractTags(fc.card.description).map(({ tag, def }) => (
+                      <span key={tag} className={`text-[10px] text-white rounded px-1 ${def.color}`}>
+                        {def.label}
                       </span>
                     ))}
                   </div>
@@ -194,12 +195,6 @@ function flattenCard(card: Card, column: Column, depth: number, out: FlatCard[])
       flattenCard(child, column, depth + 1, out);
     }
   }
-}
-
-/** Extract #tags from a description string. */
-function extractTags(text: string): string[] {
-  const matches = text.match(/#([a-zA-Z0-9_-]+)/g);
-  return matches ? matches.map((t) => t.slice(1).toLowerCase()) : [];
 }
 
 /** Wrap matching portions of text in a <mark> for visual highlighting. */

@@ -18,8 +18,9 @@
     Indent with 2 spaces per level. Unlimited nesting depth.
     The board renders up to 4 visual levels with progress badges.
 
-  PRIORITY INDICATORS (render as colored dots, multiple allowed):
+  TAGS (any #tag renders as a colored badge):
     #critical (red)  #important (amber)  #polish (green)
+    #bug  #feature  #docs  #frontend  #backend — any tag works
 
   RULES FOR AI AGENTS:
   • Every task MUST start with "- [ ]" or "- [x]" at the beginning of the line
