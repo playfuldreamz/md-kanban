@@ -43,7 +43,7 @@
 
 ## To Do
 - [!] **Demo: warning card** — This card uses - [!] syntax. Should show an amber left border in the UI. #polish
-- [ ] **Demo: due date** — This card has an upcoming due date. Should show a blue "Due Aug 15" badge. due:2026-08-15 #polish
+- [ ] **Demo: due date** — This card has an upcoming due date. Should show a blue "Due Aug 15" badge. due:2026-08-15 #polish #critical
 - [ ] **Demo: overdue** — This card is past its due date. Should show a red "Overdue" badge. due:2025-01-15 #polish
 - [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
 - [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical

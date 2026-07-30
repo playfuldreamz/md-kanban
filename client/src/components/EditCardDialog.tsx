@@ -20,7 +20,7 @@ interface EditCardDialogProps {
   dueDate?: string;
   warning?: boolean;
   priorities: Record<string, TagDef>;
-  onSave: (title: string, description: string) => void;
+  onSave: (title: string, description: string, dueDate?: string, warning?: boolean) => void;
   onClose: () => void;
 }
 
@@ -29,6 +29,7 @@ export default function EditCardDialog({ open, title, description, dueDate, warn
   const [editDesc, setEditDesc] = useState(description);
   const [editDueDate, setEditDueDate] = useState(dueDate || '');
   const [editWarning, setEditWarning] = useState(warning || false);
+  const [customTagInput, setCustomTagInput] = useState('');
 
   useEffect(() => {
     if (!open) return;
@@ -132,6 +133,21 @@ export default function EditCardDialog({ open, title, description, dueDate, warn
                     </button>
                   );
                 })}
+                {/* Quick-add tag input */}
+                <input
+                  type="text"
+                  value={customTagInput}
+                  onChange={(e) => setCustomTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && customTagInput.trim()) {
+                      toggleTag(customTagInput.trim().toLowerCase().replace(/[^a-z0-9-]/g, ''));
+                      setCustomTagInput('');
+                    }
+                    if (e.key === 'Escape') setCustomTagInput('');
+                  }}
+                  placeholder="+ tag"
+                  className="w-16 text-xs bg-background border border-dashed border-border-muted rounded px-1.5 py-1 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary placeholder:text-foreground-subtle"
+                />
               </div>
             </div>
           )}
@@ -147,7 +163,7 @@ export default function EditCardDialog({ open, title, description, dueDate, warn
           <Button
             variant="primary"
             onClick={() => {
-              onSave(editTitle.trim() || title, editDesc.trim());
+              onSave(editTitle.trim() || title, editDesc.trim(), editDueDate || undefined, editWarning);
               onClose();
             }}
           >

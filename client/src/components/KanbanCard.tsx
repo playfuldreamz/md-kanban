@@ -24,7 +24,7 @@ interface KanbanCardProps {
   priorities?: Record<string, { label: string; color: string; ring: string }>;
   onToggle: () => void;
   onDelete: () => void;
-  onEdit?: (cardId: string, title: string, description: string) => void;
+  onEdit?: (cardId: string, title: string, description: string, dueDate?: string, warning?: boolean) => void;
   onToggleSubTask?: (parentId: string, childId: string) => void;
   onAddSubTask?: (parentId: string, title: string, description?: string) => void;
   onEditSubTask?: (parentId: string, childId: string, title: string, description: string) => void;
@@ -203,8 +203,8 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
         dueDate={card.dueDate}
         warning={card.warning}
         priorities={priorities || PRIORITY_MAP}
-        onSave={(newTitle, newDesc) => {
-          if (onEdit) onEdit(card.id, newTitle, newDesc);
+        onSave={(newTitle, newDesc, newDueDate, newWarning) => {
+          if (onEdit) onEdit(card.id, newTitle, newDesc, newDueDate, newWarning);
         }}
         onClose={() => setEditDialogOpen(false)}
       />

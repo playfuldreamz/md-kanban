@@ -2,6 +2,15 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: due date picker + warning toggle in EditCardDialog
+  
+  EditCardDialog now has a date input for setting due dates (appends
+  due:YYYY-MM-DD to description text) and a Warning toggle button
+  with AlertTriangle icon. Props extended with dueDate? and warning?.
+  
+  KanbanCard and SubTaskList pass these fields through to the dialog.
+  Plugin system still handles the parsing — the UI just gives users
+  a visual way to set/change these values.
 - docs: add in-app help & onboarding card with 3 sub-tasks to roadmap
 - docs: add in-app help/onboarding card to roadmap
 - feat: in-app help & onboarding + custom tooltips + theme fixes

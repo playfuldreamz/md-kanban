@@ -210,19 +210,19 @@ export function useBoard() {
   }, [undoCard, apiBase]);
 
   const editCard = useCallback(
-    async (cardId: string, title: string, description: string) => {
+    async (cardId: string, title: string, description: string, dueDate?: string, warning?: boolean) => {
       userDispatch({ type: 'CARD_EDIT', cardId, title, description });
       try {
-        await fetch(`${apiBase}/api/cards/${cardId}`, {
+        await fetch(apiUrl(`/api/cards/${cardId}`), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, description }),
+          body: JSON.stringify({ title, description, warning }),
         });
       } catch {
         // WebSocket sync will reconcile
       }
     },
-    [apiBase],
+    [apiUrl],
   );
 
   // ─── Sub-task mutations ──────────────────────────────────────────────
