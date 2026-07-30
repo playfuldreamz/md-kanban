@@ -200,6 +200,8 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
         open={editDialogOpen}
         title={card.title}
         description={card.description}
+        dueDate={card.dueDate}
+        warning={card.warning}
         priorities={priorities || PRIORITY_MAP}
         onSave={(newTitle, newDesc) => {
           if (onEdit) onEdit(card.id, newTitle, newDesc);

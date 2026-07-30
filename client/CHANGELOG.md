@@ -2,6 +2,25 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: plugin system for parser extensions + test cards
+  
+  Plugin runner (lib/plugin-runner.js): loads named plugins from
+  builtin/global/project dirs, parses @plugins from preamble.
+  
+  Built-in plugins:
+  - due-dates: extracts due:YYYY-MM-DD → card.dueDate, UI renders
+    colored badge (red overdue, amber today/soon, blue upcoming)
+  - warning-cards: recognizes - [!] syntax → card.warning, UI renders
+    amber left border on card
+  
+  Parser updated to accept plugins option and run parseCard hooks.
+  Writer runs serializeCard hooks. Server reads @plugins from preamble,
+  caches loaded plugins per-file. Plugin errors are non-fatal.
+  
+  TODO.md: @plugins due-dates, warning-cards enabled. 3 demo cards
+  added to To Do column (warning, due date, overdue).
+  
+  Types: Card now has dueDate? and warning? fields.
 
 - feat: card creation date tracking via HTML comment
   

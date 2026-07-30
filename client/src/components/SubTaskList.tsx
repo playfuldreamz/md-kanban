@@ -167,6 +167,7 @@ function SubTaskItem({
       ) : null}
 
       <EditCardDialog open={editOpen} title={child.title} description={child.description}
+        dueDate={child.dueDate} warning={child.warning}
         priorities={PRIORITY_MAP}
         onSave={(newTitle, newDesc) => onEditSubTask?.(parentId, child.id, newTitle, newDesc)}
         onClose={() => setEditOpen(false)}

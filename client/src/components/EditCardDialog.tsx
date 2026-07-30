@@ -9,6 +9,7 @@ import {
 } from '@appica/ui-react/alert-dialog';
 import { Input } from '@appica/ui-react/input';
 import { Button } from '@appica/ui-react/button';
+import { AlertTriangle } from '@appica/icons-react';
 import { extractTags, getTagDef } from './card-utils';
 import type { TagDef } from './card-utils';
 
@@ -16,20 +17,26 @@ interface EditCardDialogProps {
   open: boolean;
   title: string;
   description: string;
+  dueDate?: string;
+  warning?: boolean;
   priorities: Record<string, TagDef>;
   onSave: (title: string, description: string) => void;
   onClose: () => void;
 }
 
-export default function EditCardDialog({ open, title, description, priorities, onSave, onClose }: EditCardDialogProps) {
+export default function EditCardDialog({ open, title, description, dueDate, warning, priorities, onSave, onClose }: EditCardDialogProps) {
   const [editTitle, setEditTitle] = useState(title);
   const [editDesc, setEditDesc] = useState(description);
+  const [editDueDate, setEditDueDate] = useState(dueDate || '');
+  const [editWarning, setEditWarning] = useState(warning || false);
 
   useEffect(() => {
     if (!open) return;
     setEditTitle(title);
     setEditDesc(description);
-  }, [open, title, description]);
+    setEditDueDate(dueDate || '');
+    setEditWarning(warning || false);
+  }, [open, title, description, dueDate, warning]);
 
   const toggleTag = (tag: string) => {
     if (editDesc.includes(`#${tag}`)) {
@@ -39,7 +46,13 @@ export default function EditCardDialog({ open, title, description, priorities, o
     }
   };
 
-  // Merge known priority tags with any tags found in the description
+  const handleDueDateChange = (val: string) => {
+    setEditDueDate(val);
+    let desc = editDesc.replace(/\s*due:\d{4}-\d{2}-\d{2}\s*/i, ' ').replace(/\s+/g, ' ').trim();
+    if (val) desc = (desc + ` due:${val}`).trim();
+    setEditDesc(desc);
+  };
+
   const existingTags = extractTags(editDesc, priorities);
   const activeTags = new Set(existingTags.map((t) => t.tag));
   const priorityTagSet = new Set(Object.keys(priorities));
@@ -69,6 +82,32 @@ export default function EditCardDialog({ open, title, description, priorities, o
               className="w-full min-h-[80px] text-sm bg-background border border-border rounded-lg px-3 py-2 resize-y focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               placeholder="Details, notes, or #bug #feature #frontend..."
             />
+          </div>
+
+          {/* Due date + warning row */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1">
+              <label className="text-xs font-medium text-foreground-muted block mb-1">Due date</label>
+              <input
+                type="date"
+                value={editDueDate}
+                onChange={(e) => handleDueDateChange(e.target.value)}
+                className="w-full text-xs bg-background border border-border rounded px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              />
+            </div>
+            <div className="pt-5">
+              <button
+                onClick={() => setEditWarning(!editWarning)}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                  editWarning
+                    ? 'border-amber-500 bg-amber-500/10 text-amber-600'
+                    : 'border-border text-foreground-muted hover:border-border-strong hover:text-foreground'
+                }`}
+              >
+                <AlertTriangle className="w-3.5 h-3.5" />
+                Warning
+              </button>
+            </div>
           </div>
 
           {allToggleTags.length > 0 && (
