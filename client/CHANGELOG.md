@@ -2,6 +2,11 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- fix: HelpDialog scrolls properly on small screens
+  
+  Changed from centered overflow dialog to flex-col layout with fixed
+  header and scrollable body. max-h-[85vh] prevents viewport overflow.
+  Title stays visible while content scrolls independently.
 - feat: plugin system for parser extensions + test cards
   
   Plugin runner (lib/plugin-runner.js): loads named plugins from

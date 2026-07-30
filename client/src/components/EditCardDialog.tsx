@@ -126,9 +126,8 @@ export default function EditCardDialog({ open, title, description, dueDate, warn
             </div>
           </div>
 
-          {/* Assignees */}
-          {allAssigneeUsers.length > 0 && (
-            <div>
+          {/* Assignees — always show to allow adding first */}
+          <div>
               <label className="text-xs font-medium text-foreground-muted block mb-2">Assignees</label>
               <div className="flex flex-wrap gap-2">
                 {allAssigneeUsers.map((username) => {
@@ -167,7 +166,6 @@ export default function EditCardDialog({ open, title, description, dueDate, warn
                 />
               </div>
             </div>
-          )}
 
           {allToggleTags.length > 0 && (
             <div>
