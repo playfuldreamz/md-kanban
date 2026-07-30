@@ -73,7 +73,16 @@ kanban-md/
 
 This is not optional. If a file is over 500 lines after your edits, you have violated this rule and must refactor before the work is considered done.
 
-### 1. Thoroughness before speed
+### 1. UI testing before commit
+
+**Never commit UI changes without first telling the user how to test them in the browser.** Before committing, describe:
+1. What to look for (new button, changed behavior, visual indicator)
+2. What actions to take (click, type, drag, keyboard shortcut)
+3. What the expected result is
+
+Wait for the user to confirm the feature works before committing. If the user reports a bug, fix it and provide updated testing instructions. Only commit after explicit approval.
+
+### 2. Thoroughness before speed
 
 **Never rush to finish a task.** Before writing any code:
 1. **Ask clarifying questions** — if anything is ambiguous, ask. Don't guess.
@@ -87,11 +96,11 @@ This is not optional. If a file is over 500 lines after your edits, you have vio
 4. **Test the full user journey** — not just the happy path. Add, edit, save, refresh, re-open, check persistence.
 5. **Verify persistence** — if something is "saved", read the file to prove it.
 
-### 2. The file is ALWAYS the source of truth
+### 3. The file is ALWAYS the source of truth
 
 Never store state anywhere except the TODO.md file. The server keeps a parsed copy in memory for broadcasting, but every mutation writes through to the file. If the file write fails, the API returns 500 and the frontend reverts its optimistic update. There is no database, no cache file, no `.kanban-state.json`. The file is the database.
 
-### 3. Optimistic UI → API → File → WebSocket → Reconcile
+### 4. Optimistic UI → API → File → WebSocket → Reconcile
 
 Every mutation follows this exact chain:
 ```
@@ -106,11 +115,11 @@ User action
 
 The reconciliation step is critical. The server state always wins. If it differs from the optimistic state (due to a concurrent file edit), the optimistic update is discarded. This prevents drift between the browser and the file.
 
-### 4. Appica UI components ONLY for UI
+### 5. Appica UI components ONLY for UI
 
 Every visible element uses Appica UI components. No raw `<button>`, no raw `<input>`, no custom CSS classes beyond Tailwind utilities. The only exception is the drag-and-drop overlay (a semi-transparent clone of the dragged card), which uses raw divs for performance.
 
-### 5. No state library
+### 6. No state library
 
 A single `useReducer` in `BoardShell` holds all state. No Redux, Zustand, Jotai, or Context for board state. The reducer handles 9 action types:
 - `BOARD_SYNC` — replace entire state
@@ -123,15 +132,15 @@ A single `useReducer` in `BoardShell` holds all state. No Redux, Zustand, Jotai,
 - `SUBTASK_ADD` — add a child to a card
 - `SUBTASK_DELETE` — remove a child
 
-### 6. Dragging uses HTML5 DnD, not a library
+### 7. Dragging uses HTML5 DnD, not a library
 
 No `@dnd-kit`, no `react-beautiful-dnd`. HTML5 Drag and Drop API is sufficient for a single-user Kanban board. Touch support can use a small polyfill if needed, but mouse-first is acceptable for v1.
 
-### 7. The server is vanilla Node.js
+### 8. The server is vanilla Node.js
 
 No TypeScript on the server side. The server is split across three files (`server.js`, `lib/routes.js`, `lib/server-utils.js`), all under 250 lines each. Use JSDoc comments for editor intellisense. The client is TypeScript because React components benefit from prop types.
 
-### 8. Tests for parser are mandatory
+### 9. Tests for parser are mandatory
 
 The parser is the most critical piece — if it misparses, cards disappear. Minimum 20 test cases covering:
 - Every valid input format
@@ -141,7 +150,7 @@ The parser is the most critical piece — if it misparses, cards disappear. Mini
 - Round-trip fidelity
 - Minimal diff output
 
-### 9. Zero dependency on NoteAPP
+### 10. Zero dependency on NoteAPP
 
 This directory must be self-contained. It cannot import from `../../backend/` or `../../frontend/`. When extracted, it works standalone. The only shared artifact is the TODO.md format itself.
 

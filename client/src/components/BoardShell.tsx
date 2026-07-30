@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Badge } from '@appica/ui-react/badge';
 import { Skeleton } from '@appica/ui-react/skeleton';
 import { Alert } from '@appica/ui-react/alert';
-import { AlertTriangle, Loader, Search } from '@appica/icons-react';
+import { AlertTriangle, Loader, Search, ArrowBackUp, ArrowForwardUp } from '@appica/icons-react';
 import type { BoardState, Card } from '../types';
 import ThemeToggle from './ThemeToggle';
 import ColumnList from './ColumnList';
@@ -24,6 +24,10 @@ interface BoardShellProps {
   addColumn: (name: string) => void;
   deleteColumn: (columnId: string) => void;
   undoDelete: () => void;
+  doUndo: () => void;
+  doRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
   toggleSubTask: (parentId: string, childId: string) => void;
   addSubTask: (parentId: string, title: string, description?: string) => void;
   editSubTask: (parentId: string, childId: string, title: string, description: string) => void;
@@ -31,7 +35,7 @@ interface BoardShellProps {
 }
 
 export default function BoardShell(props: BoardShellProps) {
-  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, addColumn, deleteColumn, undoDelete, toggleSubTask, addSubTask, editSubTask, deleteSubTask } = props;
+  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, addColumn, deleteColumn, undoDelete, doUndo, doRedo, canUndo, canRedo, toggleSubTask, addSubTask, editSubTask, deleteSubTask } = props;
 
   const [dragCardId, setDragCardId] = useState<string | null>(null);
   const [dragColumnId, setDragColumnId] = useState<string | null>(null);
@@ -50,6 +54,14 @@ export default function BoardShell(props: BoardShellProps) {
       if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setPaletteOpen(true);
+      }
+      if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
+        e.preventDefault();
+        doUndo();
+      }
+      if ((e.key === 'z' && (e.metaKey || e.ctrlKey) && e.shiftKey) || (e.key === 'y' && (e.metaKey || e.ctrlKey))) {
+        e.preventDefault();
+        doRedo();
       }
     };
     window.addEventListener('keydown', handleKey);
@@ -113,6 +125,24 @@ export default function BoardShell(props: BoardShellProps) {
           <Badge variant="secondary">{totalCards} tasks</Badge>
         </div>
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <button
+              onClick={doUndo}
+              disabled={!canUndo}
+              className="flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground transition-colors border border-border rounded px-1.5 py-1 disabled:opacity-30 disabled:cursor-default"
+              title="Undo (Ctrl+Z)"
+            >
+              <ArrowBackUp className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={doRedo}
+              disabled={!canRedo}
+              className="flex items-center gap-1 text-xs text-foreground-muted hover:text-foreground transition-colors border border-border rounded px-1.5 py-1 disabled:opacity-30 disabled:cursor-default"
+              title="Redo (Ctrl+Shift+Z)"
+            >
+              <ArrowForwardUp className="w-3.5 h-3.5" />
+            </button>
+          </div>
           <button
             onClick={() => setPaletteOpen(true)}
             className="flex items-center gap-1.5 text-xs text-foreground-muted hover:text-foreground transition-colors border border-border rounded-md px-2 py-1"

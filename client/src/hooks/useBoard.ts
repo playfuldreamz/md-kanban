@@ -1,7 +1,9 @@
 import { useReducer, useEffect, useCallback, useState, useRef } from 'react';
 import { boardReducer, initialBoard } from '../reducer';
 import type { BoardState, Card } from '../types';
+import type { BoardAction } from '../reducer';
 import { useWebSocket } from './useWebSocket';
+import { useUndoRedo } from './useUndoRedo';
 
 /**
  * Determines the WebSocket URL based on the current environment.
@@ -30,11 +32,20 @@ function getApiUrl(): string {
  */
 export function useBoard() {
   const [board, dispatch] = useReducer(boardReducer, initialBoard);
+  const boardRef = useRef(board);
+  boardRef.current = board;
+  const { pushState, undo, redo, clearHistory, canUndo, canRedo } = useUndoRedo();
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [undoCard, setUndoCard] = useState<{ card: Card; columnId: string } | null>(null);
   const apiBase = getApiUrl();
+
+  /** Dispatch a user action, pushing current state to history first. */
+  const userDispatch = useCallback((action: BoardAction) => {
+    pushState(boardRef.current);
+    dispatch(action);
+  }, [pushState]);
 
   // Initial fetch from REST API
   useEffect(() => {
@@ -42,15 +53,16 @@ export function useBoard() {
       .then((res) => res.json())
       .then((data: BoardState) => {
         dispatch({ type: 'BOARD_SYNC', board: data });
+        clearHistory();
         setLoading(false);
       })
       .catch((err) => {
         setError(err.message || 'Failed to load board');
         setLoading(false);
       });
-  }, [apiBase]);
+  }, [apiBase, clearHistory]);
 
-  // WebSocket for live sync
+  // WebSocket for live sync — don't clear history, user can undo across syncs
   const handleSync = useCallback((msg: { type: 'sync'; board: BoardState }) => {
     dispatch({ type: 'BOARD_SYNC', board: msg.board });
   }, []);
@@ -60,7 +72,7 @@ export function useBoard() {
   // Mutations
   const toggleCard = useCallback(
     async (cardId: string) => {
-      dispatch({ type: 'CARD_TOGGLE', cardId });
+      userDispatch({ type: 'CARD_TOGGLE', cardId });
       try {
         const card = findCard(board, cardId);
         if (card) {
@@ -87,7 +99,7 @@ export function useBoard() {
         });
         if (res.ok) {
           const card: Card = await res.json();
-          dispatch({ type: 'CARD_ADD', columnId, card });
+          userDispatch({ type: 'CARD_ADD', columnId, card });
         }
       } catch {
         // WebSocket sync will reconcile
@@ -98,7 +110,7 @@ export function useBoard() {
 
   const moveCard = useCallback(
     async (cardId: string, toColumnId: string, toIndex: number) => {
-      dispatch({ type: 'CARD_MOVE', cardId, toColumnId, toIndex });
+      userDispatch({ type: 'CARD_MOVE', cardId, toColumnId, toIndex });
       try {
         await fetch(`${apiBase}/api/cards/${cardId}/move`, {
           method: 'PUT',
@@ -119,7 +131,7 @@ export function useBoard() {
       if (card && columnId) {
         setUndoCard({ card: { ...card }, columnId });
       }
-      dispatch({ type: 'CARD_DELETE', cardId });
+      userDispatch({ type: 'CARD_DELETE', cardId });
       try {
         await fetch(`${apiBase}/api/cards/${cardId}`, { method: 'DELETE' });
       } catch {
@@ -130,6 +142,18 @@ export function useBoard() {
     },
     [board, apiBase],
   );
+
+  /** Undo the last user action by restoring the previous board state. */
+  const doUndo = useCallback(() => {
+    const prev = undo(boardRef.current);
+    if (prev) dispatch({ type: 'BOARD_SYNC', board: prev });
+  }, [undo]);
+
+  /** Redo a previously undone action. */
+  const doRedo = useCallback(() => {
+    const next = redo(boardRef.current);
+    if (next) dispatch({ type: 'BOARD_SYNC', board: next });
+  }, [redo]);
 
   const undoDelete = useCallback(async () => {
     if (!undoCard) return;
@@ -143,7 +167,7 @@ export function useBoard() {
       });
       if (res.ok) {
         const created: Card = await res.json();
-        dispatch({ type: 'CARD_ADD', columnId, card: created });
+        userDispatch({ type: 'CARD_ADD', columnId, card: created });
       }
     } catch {
       // WebSocket sync will reconcile
@@ -152,7 +176,7 @@ export function useBoard() {
 
   const editCard = useCallback(
     async (cardId: string, title: string, description: string) => {
-      dispatch({ type: 'CARD_EDIT', cardId, title, description });
+      userDispatch({ type: 'CARD_EDIT', cardId, title, description });
       try {
         await fetch(`${apiBase}/api/cards/${cardId}`, {
           method: 'PUT',
@@ -171,7 +195,7 @@ export function useBoard() {
   /** Toggle a sub-task's done state. Sends full children array to server. */
   const toggleSubTask = useCallback(
     async (parentId: string, childId: string) => {
-      dispatch({ type: 'SUBTASK_TOGGLE', parentId, childId });
+      userDispatch({ type: 'SUBTASK_TOGGLE', parentId, childId });
       try {
         const parent = findCard(board, parentId);
         if (parent && parent.children) {
@@ -195,7 +219,7 @@ export function useBoard() {
   const addSubTask = useCallback(
     async (parentId: string, title: string, description?: string) => {
       const desc = description || '';
-      dispatch({ type: 'SUBTASK_ADD', parentId, title, description: desc });
+      userDispatch({ type: 'SUBTASK_ADD', parentId, title, description: desc });
       try {
         const parent = findCard(board, parentId);
         if (parent) {
@@ -226,7 +250,7 @@ export function useBoard() {
   /** Edit a sub-task's title and description. */
   const editSubTask = useCallback(
     async (parentId: string, childId: string, title: string, description: string) => {
-      dispatch({ type: 'SUBTASK_EDIT', parentId, childId, title, description });
+      userDispatch({ type: 'SUBTASK_EDIT', parentId, childId, title, description });
       try {
         const parent = findCard(board, parentId);
         if (parent && parent.children) {
@@ -249,7 +273,7 @@ export function useBoard() {
   /** Delete a sub-task from a card. */
   const deleteSubTask = useCallback(
     async (parentId: string, childId: string) => {
-      dispatch({ type: 'SUBTASK_DELETE', parentId, childId });
+      userDispatch({ type: 'SUBTASK_DELETE', parentId, childId });
       try {
         const parent = findCard(board, parentId);
         if (parent && parent.children) {
@@ -341,6 +365,10 @@ export function useBoard() {
     addSubTask,
     editSubTask,
     deleteSubTask,
+    doUndo,
+    doRedo,
+    canUndo,
+    canRedo,
   };
 }
 

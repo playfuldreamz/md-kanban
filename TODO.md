@@ -38,7 +38,6 @@
   - [ ] **sdadasd** <!-- created:2026-07-29 -->
 - [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
 - [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical
-- [ ] **Undo/redo stack** — Ring buffer of ~20 board states. Ctrl+Z / Ctrl+Shift+Z step through history. Protects against accidental drags, edits, and deletes. Extends the existing delete-undo toast. #important
 - [ ] **Card labels / tag system beyond priority** — Any #tag in a description renders as a colored badge. User-defined colors via the @priorities block in the preamble. Unlocks #bug, #feature, #docs, #frontend, #backend. #important
 - [ ] **Multi-file / project switcher** — Support --file a.md --file b.md or directory mode (--dir .). UI gets sidebar/dropdown to switch between boards. Useful for monorepos. #important
 - [ ] **Assignee support** — Parse @username in descriptions and render as name chips. Purely a display convention. @assignees block in preamble maps usernames → display names + colors. #important
@@ -50,6 +49,7 @@
 - [ ] **Server-side TypeScript** — The "vanilla Node.js" rule should be revisited once the codebase stabilizes. JSDoc types are already in use; adopting TS would improve editor support and catch bugs. #polish
 - [ ] **E2E tests with Playwright** — Browser-based tests: open board → drag card → verify file on disk → verify WebSocket sync. Current test suite is solid (79 tests) but has no browser automation. #polish
 - [ ] **Plugin system for parser extensions** — Allow custom line parsers (e.g. - [!] **Title** as a warning card with special styling). The modular parser architecture already supports this pattern. #polish
+- [ ] **asfsfaf** <!-- created:2026-07-30 -->
 
 
 ## In Progress
@@ -82,3 +82,7 @@
 - [x] **Dark mode synced to OS preference** — Three-way theme toggle cycles system → light → dark. Appica UI ThemeProvider enableSystem already respects prefers-color-scheme by default. Manual override persists in localStorage; choosing "system" restores OS sync. #polish
   - [x] **ThemeToggle** — changed from binary light/dark to three-way cycle (system → light → dark) with DeviceDesktop icon for system mode
   - [x] **ThemeProvider** — enableSystem already defaults to true; no provider changes needed
+- [x] **Undo/redo stack** — Ring buffer of 20 board states. Visible undo/redo buttons in header with arrow icons. Ctrl+Z / Ctrl+Shift+Z keyboard shortcuts. History clears on page refresh. #important
+  - [x] **useUndoRedo** — ref-based ring buffer, useState flags for reactivity, deep-clones states
+  - [x] **useBoard** — userDispatch wraps all user actions with pushState, doUndo/doRedo dispatch BOARD_SYNC
+  - [x] **BoardShell** — undo/redo buttons in header, keyboard shortcut listeners

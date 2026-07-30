@@ -2,6 +2,14 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- fix: use custom hover-revealed date label instead of browser title tooltip
+  
+  Card and sub-task creation dates now appear as subtle text that fades
+  in on hover (opacity-0 group-hover:opacity-100), matching the edit/
+  delete button pattern. No more native browser title tooltip.
+  
+  Cards show date at text-[10px] in the priority-dots row area.
+  Sub-tasks show date at text-[9px] below their description.
 - feat: search button in header bar with Cmd+K/Ctrl+K shortcut hint
   
   Header now shows a search button with icon, label, and keyboard
