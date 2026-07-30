@@ -7,6 +7,8 @@ export interface Card {
   description: string;
   rawLine: string;
   createdAt?: string;
+  dueDate?: string;
+  warning?: boolean;
   children?: Card[];
   _changed?: boolean;
 }

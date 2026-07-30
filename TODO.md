@@ -1,6 +1,8 @@
 <!--
   This file powers a live Kanban board (npx md-kanban).
 
+  @plugins due-dates, warning-cards
+
   STRUCTURE:
     ## To Do
     ## In Progress
@@ -22,6 +24,11 @@
     #critical (red)  #important (amber)  #polish (green)
     #bug  #feature  #docs  #frontend  #backend — any tag works
 
+  PLUGINS (add to enable extra features):
+    @plugins due-dates, warning-cards
+    due-dates: parse due:YYYY-MM-DD in descriptions → colored badge
+    warning-cards: - [!] syntax → amber left border
+
   RULES FOR AI AGENTS:
   • Every task MUST start with "- [ ]" or "- [x]" at the beginning of the line
   • Bold the title with **double asterisks**
@@ -35,6 +42,9 @@
 # kanban-md — Roadmap
 
 ## To Do
+- [!] **Demo: warning card** — This card uses - [!] syntax. Should show an amber left border in the UI. #polish
+- [ ] **Demo: due date** — This card has an upcoming due date. Should show a blue "Due Aug 15" badge. due:2026-08-15 #polish
+- [ ] **Demo: overdue** — This card is past its due date. Should show a red "Overdue" badge. due:2025-01-15 #polish
 - [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
 - [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical
 - [ ] **Assignee support** — Parse @username in descriptions and render as name chips. Purely a display convention. @assignees block in preamble maps usernames → display names + colors. #important
@@ -43,7 +53,14 @@
 - [ ] **Git integration (opt-in)** — --git flag that auto-commits TODO.md changes with meaningful messages (kanban-md: moved "Fix login" → In Progress). Respects user's git config. Off by default. #polish
 - [ ] **Column WIP limits** — Per-column Work-In-Progress limits (e.g. "In Progress" max 5). Column header turns amber when exceeded. Configured via @wip block in preamble. #polish
 - [ ] **E2E tests with Playwright** — Browser-based tests: open board → drag card → verify file on disk → verify WebSocket sync. Current test suite is solid (79 tests) but has no browser automation. #polish
-- [ ] **Plugin system for parser extensions** — Allow custom line parsers (e.g. - [!] **Title** as a warning card with special styling). The modular parser architecture already supports this pattern. #polish
+- [ ] **Plugin system for parser extensions** — Hook-based middleware at parse/serialize points. Configured via `@plugins` block in preamble. Ships with due-dates and warning-cards plugins. Users can drop `.js` files in `~/kanban-md/plugins/`. #polish
+  - [ ] **Plugin API** — `lib/plugin-runner.js`: loads named plugins from config, calls `parseCard()` and `serializeCard()` hooks per card
+  - [ ] **Preamble config** — parser reads `@plugins due-dates, warning-cards` from HTML comment block
+  - [ ] **due-dates plugin** — extracts `due:YYYY-MM-DD` from descriptions → `card.dueDate`, adds overdue/soon visual hints in KanbanCard
+  - [ ] **warning-cards plugin** — recognizes `- [!] **Title**` syntax → `card.warning = true`, renders with amber left border in KanbanCard
+  - [ ] **User plugin dir** — autoload `.js` files from `<project>/.kanban/plugins/` or `~/kanban-md/plugins/`
+  - [ ] **KanbanCard styling hooks** — warning cards get amber left border, overdue cards get red badge + border
+  - [ ] **Docs update** — HelpDialog, README, design.md, FORMAT_GUIDE updated with plugin docs and new syntax
 - [ ] **Due dates** — Parse due dates from card text (due:YYYY-MM-DD or 📅 YYYY-MM-DD) and show visual indicators. Overdue cards get a red badge. A "Due Soon" filter in the search palette. #critical
   - [ ] **sdadasd** <!-- created:2026-07-29 -->
 

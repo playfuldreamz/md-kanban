@@ -12,7 +12,7 @@ import {
 } from '@appica/ui-react/alert-dialog';
 import EditCardDialog from './EditCardDialog';
 import { renderInline } from '../lib/markdown';
-import { PRIORITY_MAP, formatCreatedDate, extractTags } from './card-utils';
+import { PRIORITY_MAP, formatCreatedDate, extractTags, getDueColor, formatDueDate } from './card-utils';
 import { SubTaskSection } from './SubTaskList';
 import Tooltip from './Tooltip';
 import type { Card } from '../types';
@@ -71,6 +71,7 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
           group relative rounded-lg border bg-background p-3
           transition-shadow duration-150 hover:shadow-md
           ${card.done ? 'border-border-muted opacity-75' : 'border-border'}
+          ${card.warning ? 'border-l-2 border-l-amber-500' : ''}
           ${isDragging ? 'opacity-50 shadow-lg' : ''}
           ${!editing && onDragStart ? 'cursor-grab active:cursor-grabbing' : ''}
         `}
@@ -112,9 +113,14 @@ export default function KanbanCard({ card, isDragging, columnName, priorities, o
               />
             )}
             {/* Tags + creation date */}
-            {(tags.length > 0 || card.createdAt) && (
+            {(tags.length > 0 || card.createdAt || card.dueDate) && (
               <div className="flex items-center justify-between mt-1.5 gap-2">
                 <div className="flex items-center gap-1 flex-wrap">
+                  {card.dueDate && (
+                    <span className={`inline-flex items-center px-1.5 py-px rounded text-[10px] font-medium text-white ${getDueColor(card.dueDate)}`}>
+                      {formatDueDate(card.dueDate)}
+                    </span>
+                  )}
                   {tags.map(({ tag, def }) => (
                     <Tooltip key={tag} label={def.label} placement="top">
                       <span

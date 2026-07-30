@@ -2,6 +2,27 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- docs: add in-app help & onboarding card with 3 sub-tasks to roadmap
+- docs: add in-app help/onboarding card to roadmap
+- feat: in-app help & onboarding + custom tooltips + theme fixes
+  
+  HelpDialog: press ? to open keyboard shortcuts + feature overview.
+  First-run overlay: welcome dialog with key shortcuts on first visit
+  (stored in localStorage). Empty-state tips: contextual hints in
+  empty columns ('Add your first task below', 'Drag completed here').
+  
+  Tooltip component: reusable portal-based tooltip with placement
+  (top/bottom). Replaces native title attributes across all header
+  buttons (undo, redo, search, ?, theme toggle) and KanbanCard tags.
+  
+  Theme fix: ThemeProvider now explicit defaultTheme=system. Legacy
+  localStorage values migrated to 'system' on first load so OS dark
+  mode preference is respected on refresh.
+  
+  Platform-aware shortcuts: ⌘ on Mac, Ctrl+ on Windows in tooltips,
+  help dialog, and first-run overlay.
+  
+  design.md: added Tooltip pattern + anti-pattern (no native title).
 - docs: remove Server-side TypeScript ticket — vanilla JS stays per Rule 7
 - docs: drop Server-side TypeScript — vanilla JS stays per Rule 7
 - feat: multi-file support with project switcher dropdown

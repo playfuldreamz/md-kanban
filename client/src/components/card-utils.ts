@@ -93,3 +93,28 @@ export function formatCreatedDate(iso: string): string {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return `Created ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
+
+/** Get color for a due date badge: red for overdue, amber for today, blue for upcoming. */
+export function getDueColor(dueDate: string): string {
+  const now = new Date();
+  const due = new Date(dueDate);
+  if (isNaN(due.getTime())) return 'bg-foreground-muted';
+  const diffDays = Math.floor((due.getTime() - now.getTime()) / 86400000);
+  if (diffDays < 0) return 'bg-red-500';
+  if (diffDays === 0) return 'bg-amber-500';
+  if (diffDays <= 3) return 'bg-amber-500';
+  return 'bg-blue-500';
+}
+
+/** Format a due date for display: "Due Jul 28" or "Overdue" or "Due today". */
+export function formatDueDate(dueDate: string): string {
+  const now = new Date();
+  const due = new Date(dueDate);
+  if (isNaN(due.getTime())) return dueDate;
+  const diffDays = Math.floor((due.getTime() - now.getTime()) / 86400000);
+  if (diffDays < 0) return `Overdue ${Math.abs(diffDays)}d`;
+  if (diffDays === 0) return 'Due today';
+  if (diffDays === 1) return 'Due tomorrow';
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `Due ${months[due.getMonth()]} ${due.getDate()}`;
+}
