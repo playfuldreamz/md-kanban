@@ -28,5 +28,6 @@ export interface BoardState {
 /** WebSocket message from the server. */
 export interface SyncMessage {
   type: 'sync';
+  file?: string;
   board: BoardState;
 }

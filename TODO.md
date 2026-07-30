@@ -39,13 +39,11 @@
   - [ ] **sdadasd** <!-- created:2026-07-29 -->
 - [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
 - [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical
-- [ ] **Multi-file / project switcher** — Support --file a.md --file b.md or directory mode (--dir .). UI gets sidebar/dropdown to switch between boards. Useful for monorepos. #important
 - [ ] **Assignee support** — Parse @username in descriptions and render as name chips. Purely a display convention. @assignees block in preamble maps usernames → display names + colors. #important
 - [ ] **Board templates** — kanban-md init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 3-4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. #polish
 - [ ] **Export** — GET /api/board/export?format=json|csv. CSV for spreadsheet users. Optional static HTML export for sharing a snapshot. #polish
 - [ ] **Git integration (opt-in)** — --git flag that auto-commits TODO.md changes with meaningful messages (kanban-md: moved "Fix login" → In Progress). Respects user's git config. Off by default. #polish
 - [ ] **Column WIP limits** — Per-column Work-In-Progress limits (e.g. "In Progress" max 5). Column header turns amber when exceeded. Configured via @wip block in preamble. #polish
-- [ ] **Server-side TypeScript** — The "vanilla Node.js" rule should be revisited once the codebase stabilizes. JSDoc types are already in use; adopting TS would improve editor support and catch bugs. #polish
 - [ ] **E2E tests with Playwright** — Browser-based tests: open board → drag card → verify file on disk → verify WebSocket sync. Current test suite is solid (79 tests) but has no browser automation. #polish
 - [ ] **Plugin system for parser extensions** — Allow custom line parsers (e.g. - [!] **Title** as a warning card with special styling). The modular parser architecture already supports this pattern. #polish
 
@@ -93,3 +91,9 @@
   - [x] **EditCardDialog** — simplified: removed 'Add priority' form, toggle buttons show all tags in description
   - [x] **CommandPalette** — tag badges in search results use assigned colors
   - [x] **Format guide** — updated preamble in TODO.md and FORMAT_GUIDE
+- [x] **Multi-file / project switcher** — Support --file a.md --file b.md or directory mode (--dir .). Server tracks Map of files, one chokidar per file. Frontend shows file-switcher dropdown in header. All routes accept ?file= param. #important
+  - [x] **Server** — multi-file CLI, Map-based board state, per-file chokidar watchers, WebSocket includes file field
+  - [x] **Routes** — resolveFile(req) extracts ?file=, GET /api/files endpoint, all routes targetable
+  - [x] **Frontend** — useBoard: files list, currentFile, switchFile, apiUrl helper
+  - [x] **FileSwitcher** — dropdown in header, hidden when single file
+  - [x] **README** — Multi-file section, GET /api/files documented

@@ -39,6 +39,8 @@ export function useBoard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [undoCard, setUndoCard] = useState<{ card: Card; columnId: string } | null>(null);
+  const [currentFile, setCurrentFile] = useState<string>('');
+  const [files, setFiles] = useState<{ file: string; title: string; columns: number; cards: number }[]>([]);
   const apiBase = getApiUrl();
 
   /** Dispatch a user action, pushing current state to history first. */
@@ -47,9 +49,30 @@ export function useBoard() {
     dispatch(action);
   }, [pushState]);
 
-  // Initial fetch from REST API
+  // Fetch file list, then load first board
   useEffect(() => {
-    fetch(`${apiBase}/api/board`)
+    fetch(`${apiBase}/api/files`)
+      .then((res) => res.json())
+      .then((list: { file: string; title: string; columns: number; cards: number }[]) => {
+        setFiles(list);
+        if (list.length > 0) {
+          setCurrentFile(list[0].file);
+        } else {
+          setLoading(false);
+          setError('No TODO.md files found');
+        }
+      })
+      .catch((err) => {
+        setError(err.message || 'Failed to load files');
+        setLoading(false);
+      });
+  }, [apiBase]);
+
+  // Fetch board for current file
+  useEffect(() => {
+    if (!currentFile) return;
+    setLoading(true);
+    fetch(`${apiBase}/api/board?file=${encodeURIComponent(currentFile)}`)
       .then((res) => res.json())
       .then((data: BoardState) => {
         dispatch({ type: 'BOARD_SYNC', board: data });
@@ -60,14 +83,26 @@ export function useBoard() {
         setError(err.message || 'Failed to load board');
         setLoading(false);
       });
-  }, [apiBase, clearHistory]);
+  }, [currentFile, apiBase, clearHistory]);
 
-  // WebSocket for live sync — don't clear history, user can undo across syncs
-  const handleSync = useCallback((msg: { type: 'sync'; board: BoardState }) => {
-    dispatch({ type: 'BOARD_SYNC', board: msg.board });
-  }, []);
+  // WebSocket for live sync — routes by file
+  const handleSync = useCallback((msg: { type: 'sync'; file?: string; board: BoardState }) => {
+    if (msg.file === currentFile) {
+      dispatch({ type: 'BOARD_SYNC', board: msg.board });
+    }
+  }, [currentFile]);
 
   useWebSocket(getWsUrl(), handleSync, setConnected);
+
+  const switchFile = useCallback((file: string) => {
+    setCurrentFile(file);
+  }, []);
+
+  /** Build API URL with current file param. */
+  const apiUrl = useCallback((path: string) => {
+    const sep = path.includes('?') ? '&' : '?';
+    return `${apiBase}${path}${sep}file=${encodeURIComponent(currentFile)}`;
+  }, [apiBase, currentFile]);
 
   // Mutations
   const toggleCard = useCallback(
@@ -160,7 +195,7 @@ export function useBoard() {
     const { card, columnId } = undoCard;
     setUndoCard(null);
     try {
-      const res = await fetch(`${apiBase}/api/cards`, {
+      const res = await fetch(apiUrl('/api/cards'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ columnId, title: card.title, description: card.description }),
@@ -369,6 +404,9 @@ export function useBoard() {
     doRedo,
     canUndo,
     canRedo,
+    files,
+    currentFile,
+    switchFile,
   };
 }
 

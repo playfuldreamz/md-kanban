@@ -3,10 +3,10 @@
 /**
  * md-kanban server — Express + WebSocket + chokidar.
  *
- * Reads a TODO.md file, serves a Kanban board API, watches for changes,
- * and pushes live updates to connected browsers via WebSocket.
+ * Reads one or more TODO.md files, serves a Kanban board API, watches
+ * for changes, and pushes live updates to connected browsers via WebSocket.
  *
- * Usage: node server.js [--file <path>] [--port <n>] [--no-open]
+ * Usage: node server.js [--file <path>]... [--dir <path>] [--port <n>] [--no-open]
  */
 
 const express = require('express');
@@ -16,18 +16,26 @@ const chokidar = require('chokidar');
 const fs = require('fs');
 const path = require('path');
 const { registerRoutes } = require('./lib/routes');
-const { readAndParse, writeBoard, findCard, createCard } = require('./lib/server-utils');
+const { readAndParse, writeBoard, findCard, createCard, FORMAT_GUIDE } = require('./lib/server-utils');
 
 // ─── CLI args ────────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
-let filePath = './TODO.md';
+const filePaths = [];
 let port = 3456;
 let openBrowser = true;
 
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--file' && args[i + 1]) {
-    filePath = args[++i];
+    filePaths.push(args[++i]);
+  } else if (args[i] === '--dir' && args[i + 1]) {
+    const dir = path.resolve(args[++i]);
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const e of entries) {
+      if (e.isFile() && e.name.endsWith('.md')) {
+        filePaths.push(path.join(dir, e.name));
+      }
+    }
   } else if (args[i] === '--port' && args[i + 1]) {
     port = parseInt(args[++i], 10);
   } else if (args[i] === '--no-open') {
@@ -39,7 +47,8 @@ for (let i = 0; i < args.length; i++) {
   Usage: npx md-kanban [options]
 
   Options:
-    --file <path>   Path to TODO.md (default: ./TODO.md)
+    --file <path>   Path to TODO.md (default: ./TODO.md, repeatable)
+    --dir <path>    Watch all .md files in a directory
     --port <n>      Port to listen on (default: 3456)
     --no-open       Don't open the browser automatically
     --help, -h      Show this help
@@ -48,11 +57,17 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
-const absFilePath = path.resolve(filePath);
+if (filePaths.length === 0) filePaths.push('./TODO.md');
 
-// ─── Mutable board state ─────────────────────────────────────────────────────
+// ─── Multi-file board state ──────────────────────────────────────────────────
 
-const boardRef = { current: { title: '', columns: [] } };
+/** @type {Map<string, { boardRef: { current: object }, watcher: import('chokidar').FSWatcher }>} */
+const boards = new Map();
+
+for (const fp of filePaths) {
+  const abs = path.resolve(fp);
+  boards.set(abs, { boardRef: { current: { title: '', columns: [] } }, watcher: null });
+}
 
 // ─── Express app ─────────────────────────────────────────────────────────────
 
@@ -76,31 +91,33 @@ app.use((req, res, next) => {
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-function broadcast(board) {
-  const msg = JSON.stringify({ type: 'sync', board });
+function broadcast(file, board) {
+  const msg = JSON.stringify({ type: 'sync', file, board });
   for (const client of wss.clients) {
     if (client.readyState === 1) client.send(msg);
   }
 }
 
 wss.on('connection', (ws) => {
-  ws.send(JSON.stringify({ type: 'sync', board: boardRef.current }));
+  // Send all boards on connect
+  for (const [file, entry] of boards) {
+    ws.send(JSON.stringify({ type: 'sync', file, board: entry.boardRef.current }));
+  }
   ws.on('error', () => {});
 });
 
-// Suppress EADDRINUSE on the WS server — handled by the HTTP fallback loop
 wss.on('error', () => {});
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 
 registerRoutes(app, {
-  boardRef,
-  absFilePath,
-  readAndParse: () => readAndParse(absFilePath, boardRef),
-  writeBoard: (board) => writeBoard(board, absFilePath),
+  boards,
+  readAndParse: (abs) => readAndParse(abs, boards.get(abs).boardRef),
+  writeBoard: (board, abs) => writeBoard(board, abs),
   findCard: (board, id) => findCard(board, id),
   createCard: (title, desc, colId) => createCard(title, desc, colId),
   broadcast,
+  getDefaultFile: () => filePaths[0] ? path.resolve(filePaths[0]) : null,
 });
 
 // ─── Static files ────────────────────────────────────────────────────────────
@@ -125,29 +142,31 @@ if (fs.existsSync(clientDist)) {
   });
 }
 
-// ─── File watcher ────────────────────────────────────────────────────────────
+// ─── File watchers ──────────────────────────────────────────────────────────
 
-const watcher = chokidar.watch(absFilePath, {
-  ignoreInitial: true,
-  awaitWriteFinish: { stabilityThreshold: 50, pollInterval: 10 },
-});
+for (const [abs, entry] of boards) {
+  const watcher = chokidar.watch(abs, {
+    ignoreInitial: true,
+    awaitWriteFinish: { stabilityThreshold: 50, pollInterval: 10 },
+  });
 
-watcher.on('change', () => {
-  readAndParse(absFilePath, boardRef);
-  broadcast(boardRef.current);
-});
+  watcher.on('change', () => {
+    readAndParse(abs, entry.boardRef);
+    broadcast(abs, entry.boardRef.current);
+  });
 
-watcher.on('unlink', () => {
-  boardRef.current = { title: '', columns: [] };
-  broadcast(boardRef.current);
-});
+  watcher.on('unlink', () => {
+    entry.boardRef.current = { title: '', columns: [] };
+    broadcast(abs, entry.boardRef.current);
+  });
 
-watcher.on('add', () => {
-  readAndParse(absFilePath, boardRef);
-  broadcast(boardRef.current);
-});
+  watcher.on('add', () => {
+    readAndParse(abs, entry.boardRef);
+    broadcast(abs, entry.boardRef.current);
+  });
 
-watcher.on('ready', () => {});
+  entry.watcher = watcher;
+}
 
 // ─── Startup ─────────────────────────────────────────────────────────────────
 
@@ -162,7 +181,10 @@ function start(attemptPort) {
 }
 
 async function main() {
-  readAndParse(absFilePath, boardRef);
+  // Initial reads
+  for (const [abs, entry] of boards) {
+    readAndParse(abs, entry.boardRef);
+  }
 
   let actualPort = null;
   for (let p = port; p <= port + 10; p++) {
@@ -174,18 +196,17 @@ async function main() {
     process.exit(1);
   }
 
-  const totalCards = boardRef.current.columns.reduce((s, c) => s + c.cards.length, 0);
   console.log(`\n  🏷️  md-kanban`);
-  console.log(`  📄  ${absFilePath}`);
+  for (const [abs, entry] of boards) {
+    const cards = entry.boardRef.current.columns.reduce((s, c) => s + c.cards.length, 0);
+    console.log(`  📄  ${abs}  (${entry.boardRef.current.columns.length} cols, ${cards} cards)`);
+  }
   console.log(`  🌐  http://localhost:${actualPort}`);
-  console.log(`  📊  ${boardRef.current.columns.length} columns, ${totalCards} cards`);
   console.log(`\n  Watching for changes...\n`);
 
   if (openBrowser) {
-    const url = `http://localhost:${actualPort}`;
-    const platform = process.platform;
-    const cmd = platform === 'darwin' ? 'open' : platform === 'win32' ? 'start' : 'xdg-open';
-    require('child_process').exec(`${cmd} ${url}`);
+    const cmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
+    require('child_process').exec(`${cmd} http://localhost:${actualPort}`);
   }
 }
 
@@ -193,14 +214,14 @@ async function main() {
 
 process.on('SIGINT', () => {
   console.log('\nShutting down...');
-  watcher.close();
+  for (const [, entry] of boards) entry.watcher?.close();
   wss.close();
   server.close();
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  watcher.close();
+  for (const [, entry] of boards) entry.watcher?.close();
   wss.close();
   server.close();
   process.exit(0);

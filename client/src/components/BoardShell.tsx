@@ -6,6 +6,7 @@ import { AlertTriangle, Loader, Search, ArrowBackUp, ArrowForwardUp } from '@app
 import type { BoardState, Card } from '../types';
 import ThemeToggle from './ThemeToggle';
 import ColumnList from './ColumnList';
+import FileSwitcher from './FileSwitcher';
 import CommandPalette from './CommandPalette';
 import ToastNotifications from './ToastNotifications';
 
@@ -28,6 +29,9 @@ interface BoardShellProps {
   doRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  files: { file: string; title: string; columns: number; cards: number }[];
+  currentFile: string;
+  switchFile: (file: string) => void;
   toggleSubTask: (parentId: string, childId: string) => void;
   addSubTask: (parentId: string, title: string, description?: string) => void;
   editSubTask: (parentId: string, childId: string, title: string, description: string) => void;
@@ -35,7 +39,7 @@ interface BoardShellProps {
 }
 
 export default function BoardShell(props: BoardShellProps) {
-  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, addColumn, deleteColumn, undoDelete, doUndo, doRedo, canUndo, canRedo, toggleSubTask, addSubTask, editSubTask, deleteSubTask } = props;
+  const { board, connected, loading, error, totalCards, undoCard, toggleCard, deleteCard, addCard, editCard, moveCard, addColumn, deleteColumn, undoDelete, doUndo, doRedo, canUndo, canRedo, files, currentFile, switchFile, toggleSubTask, addSubTask, editSubTask, deleteSubTask } = props;
 
   const [dragCardId, setDragCardId] = useState<string | null>(null);
   const [dragColumnId, setDragColumnId] = useState<string | null>(null);
@@ -123,6 +127,7 @@ export default function BoardShell(props: BoardShellProps) {
             {board.title || 'TODO'}
           </h1>
           <Badge variant="secondary">{totalCards} tasks</Badge>
+          <FileSwitcher files={files} currentFile={currentFile} onSelect={switchFile} />
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">

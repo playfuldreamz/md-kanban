@@ -116,6 +116,10 @@ Express gives us all three with minimal code. The React frontend is pre-built an
 
 Polling a file stat every N seconds burns CPU for no reason when nothing changes. chokidar tells us exactly when the file changed. WebSocket pushes that event to the browser in ~1ms. The alternative (SSE) works but is one-directional; WebSocket also lets the browser signal back (e.g., "I'm about to edit, hold syncs").
 
+### Multi-file support
+
+Pass `--file` multiple times or use `--dir <path>` to watch a directory of `.md` files. The server tracks a `Map<filePath, BoardState>`, one chokidar watcher per file. WebSocket messages include the `file` field so the frontend routes updates to the correct board. All REST routes accept `?file=` to target a specific board; `GET /api/files` returns the list of watched files. The frontend shows a file-switcher dropdown in the header when multiple files are registered.
+
 ---
 
 ## Data Model
@@ -215,10 +219,21 @@ The parser preserves `rawLine` for every card. When serializing, if a card hasn'
 
 ## API Surface
 
-All endpoints are localhost-only (127.0.0.1). No authentication. The server binds only to loopback.
+All endpoints are localhost-only (127.0.0.1). No authentication. The server binds only to loopback. All routes accept an optional `?file=<absolute-path>` query parameter to target a specific board when multiple files are watched. If omitted, the first registered file is used.
+
+### `GET /api/files`
+Returns the list of watched files.
+
+**Response 200:**
+```json
+[
+  { "file": "/abs/path/TODO.md", "title": "My Project", "columns": 3, "cards": 12 },
+  { "file": "/abs/path/NOTES.md", "title": "Meeting Notes", "columns": 2, "cards": 5 }
+]
+```
 
 ### `GET /api/board`
-Returns the full parsed board state.
+Returns the full parsed board state. Accepts `?file=` to select which board.
 
 **Response 200:**
 ```json
