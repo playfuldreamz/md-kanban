@@ -44,12 +44,12 @@ export default function HelpDialog({ open, onClose }: HelpDialogProps) {
   const isMac = navigator.platform.includes('Mac');
   return (
     <AlertDialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <AlertDialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+      <AlertDialogContent className="max-w-lg max-h-[85vh] flex flex-col">
         <AlertDialogHeader>
           <AlertDialogTitle>Help & Shortcuts</AlertDialogTitle>
         </AlertDialogHeader>
 
-        <div className="space-y-5 px-6 py-2">
+        <div className="overflow-y-auto flex-1 px-6 py-2 space-y-5">
           {/* Keyboard shortcuts */}
           <div>
             <h3 className="text-xs font-semibold text-foreground-muted uppercase tracking-wide mb-2">Keyboard Shortcuts</h3>

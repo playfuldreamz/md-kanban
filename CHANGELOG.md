@@ -2,6 +2,19 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- docs: mark all assignee sub-tasks complete
+- docs: HelpDialog + README updated with assignee info
+- feat: parse @assignees from preamble + thread through UI
+  
+  parser.js: parseAssignees() extracts @assignees JSON config from
+  preamble, stored as board.assignees.
+  
+  Component tree: boardAssignees threaded through BoardShell →
+  ColumnList → Column → KanbanCard → EditCardDialog.
+  
+  HelpDialog: updated with Plugins + Assignees feature rows.
+  README: assignees row in plugin table.
+  FORMAT_GUIDE: ASSIGNEES section added.
 - fix: remove max-w cap — columns fill screen evenly at all sizes
   
   flex-1 with min-w-[288px] only. Small screens: columns shrink to 288px
