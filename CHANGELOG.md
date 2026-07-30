@@ -2,6 +2,22 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: universal tag system — any #tag renders as colored badge
+  
+  All #tags in descriptions now render as visible colored badges with
+  text labels (no longer just 3 invisible dots). Unknown tags get
+  auto-assigned colors from a 16-color palette deterministically.
+  
+  card-utils.ts: new extractTags() returns all tags with definitions.
+  getTagDef() auto-assigns colors for unknown tags via hash.
+  
+  KanbanCard: replaced priority dots with text badges showing label.
+  EditCardDialog: removed complex 'Add priority' form — just type
+  #tag in description. Toggle buttons now show all tags found in
+  description + known priorities.
+  
+  CommandPalette: tag badges in search results use assigned colors.
+  Format guide updated: 'any tag works' documented in preamble.
 - refactor: split KanbanCard (571→222) into SubTaskList + card-utils
   
   Extracted to SubTaskList.tsx (232 lines):

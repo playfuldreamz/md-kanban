@@ -39,7 +39,6 @@
   - [ ] **sdadasd** <!-- created:2026-07-29 -->
 - [ ] **Expanded keyboard shortcuts** — Vim-style navigation: j/k navigate cards, Enter opens edit dialog, Space toggles done, d deletes, c creates new card in current column, Cmd+K opens command palette. #important
 - [ ] **Column reordering via drag** — Cards are draggable but columns are fixed to file order. Let users drag entire column headers to reorder. Needs PUT /api/columns/reorder. #critical
-- [ ] **Card labels / tag system beyond priority** — Any #tag in a description renders as a colored badge. User-defined colors via the @priorities block in the preamble. Unlocks #bug, #feature, #docs, #frontend, #backend. #important
 - [ ] **Multi-file / project switcher** — Support --file a.md --file b.md or directory mode (--dir .). UI gets sidebar/dropdown to switch between boards. Useful for monorepos. #important
 - [ ] **Assignee support** — Parse @username in descriptions and render as name chips. Purely a display convention. @assignees block in preamble maps usernames → display names + colors. #important
 - [ ] **Board templates** — kanban-md init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 3-4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. #polish
@@ -88,3 +87,9 @@
 - [x] **Virtual scrolling for large boards** — Lightweight custom VirtualCardList with ResizeObserver-measured heights. Only activates above 30 cards; below threshold renders normally. #polish
   - [x] **VirtualCardList** — renders only visible cards + 5 overscan, measures actual heights via ResizeObserver
   - [x] **Column.tsx** — replaces flat card map with VirtualCardList, simplified drag-drop to column-level
+- [x] **Card labels / tag system beyond priority** — Any #tag in a description renders as a colored badge with text label. Unknown tags auto-assigned from 16-color palette via deterministic hash. Quick-toggle buttons in EditCardDialog show all tags from description + priorities. #important
+  - [x] **card-utils.ts** — extractTags() returns all tags with defs, getTagDef() auto-colors unknown tags
+  - [x] **KanbanCard** — replaced priority dots with text badges showing label name
+  - [x] **EditCardDialog** — simplified: removed 'Add priority' form, toggle buttons show all tags in description
+  - [x] **CommandPalette** — tag badges in search results use assigned colors
+  - [x] **Format guide** — updated preamble in TODO.md and FORMAT_GUIDE
