@@ -90,7 +90,7 @@ export default function ColumnView({
 
   return (
     <div
-      className={`flex-1 min-w-[288px] max-w-[32rem] flex-shrink-0 flex flex-col max-h-full rounded-xl border shadow-sm transition-colors ${
+      className={`flex-1 min-w-[288px] max-w-[36rem] flex-shrink-0 flex flex-col max-h-full rounded-xl border shadow-sm transition-colors ${
         isDragOver && !isSource ? 'border-primary bg-primary-subtle/20' : 'border-border bg-background-subtle'
       }`}
       onDragOver={handleDragOver}

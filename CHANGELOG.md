@@ -2,6 +2,7 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- fix: responsive columns fit viewport without scroll on 15\
 - chore: bump to 0.1.53
 - feat: responsive column widths — auto-fit to viewport
   

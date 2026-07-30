@@ -50,7 +50,7 @@ export default function ColumnList({
 
   return (
     <div className="flex-1 overflow-x-auto overflow-y-hidden">
-      <div className="flex gap-6 p-6 h-full items-start">
+      <div className="flex gap-6 p-6 h-full items-start justify-center">
         {columns.map((col) => (
           <ColumnView
             key={col.id}
