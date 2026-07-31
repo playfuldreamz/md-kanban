@@ -12,7 +12,7 @@ import {
 } from '@appica/ui-react/alert-dialog';
 import EditCardDialog from './EditCardDialog';
 import { renderInline } from '../lib/markdown';
-import { PRIORITY_MAP, formatCreatedDate, extractTags, getDueColor, formatDueDate, extractAssignees, formatInitials } from './card-utils';
+import { PRIORITY_MAP, formatCreatedDate, extractTags, getDueColor, formatDueDate, isDueOverdue, extractAssignees, formatInitials } from './card-utils';
 import { SubTaskSection } from './SubTaskList';
 import Tooltip from './Tooltip';
 import type { Card } from '../types';
@@ -135,7 +135,7 @@ export default function KanbanCard({ card, isDragging, isJustDropped, columnName
               <div className="flex items-center justify-between mt-1.5 gap-2">
                 <div className="flex items-center gap-1 flex-wrap">
                   {card.dueDate && (
-                    <span className={`inline-flex items-center px-1.5 py-px rounded text-[10px] font-medium text-white ${getDueColor(card.dueDate)}`}>
+                    <span className={`inline-flex items-center px-1.5 py-px rounded text-[10px] font-medium text-white ${getDueColor(card.dueDate)} ${isDueOverdue(card.dueDate) ? 'overdue-pulse' : ''}`}>
                       {formatDueDate(card.dueDate)}
                     </span>
                   )}

@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Input } from '@appica/ui-react/input';
 import { Badge } from '@appica/ui-react/badge';
-import { Search, X } from '@appica/icons-react';
+import { Search, X, Clock } from '@appica/icons-react';
 import type { BoardState, Card, Column } from '../types';
 import { extractTags } from './card-utils';
 
@@ -26,28 +26,51 @@ export default function CommandPalette({ board, open, onClose, onSelect }: Comma
   // Flatten all cards (including sub-tasks) into a searchable list
   const allCards = flattenBoard(board);
 
-  // Filter by query
-  const filtered = query.trim()
-    ? allCards.filter((fc) => {
-        const q = query.toLowerCase();
-        return (
-          fc.card.title.toLowerCase().includes(q) ||
-          fc.card.description.toLowerCase().includes(q) ||
-          fc.column.name.toLowerCase().includes(q) ||
-          extractTags(fc.card.description).some(({ tag }) => tag.includes(q))
-        );
-      })
-    : [];
+  const [dueSoonOnly, setDueSoonOnly] = useState(false);
 
-  // Reset selection when query changes
+  // Cards with due dates within the next 7 days
+  const dueSoonCardIds = useMemo(() => {
+    const now = new Date();
+    const weekFromNow = new Date(now.getTime() + 7 * 86400000);
+    const ids = new Set<string>();
+    for (const fc of allCards) {
+      if (!fc.card.dueDate) continue;
+      const due = new Date(fc.card.dueDate);
+      if (!isNaN(due.getTime()) && due >= now && due <= weekFromNow) {
+        ids.add(fc.card.id);
+      }
+    }
+    return ids;
+  }, [allCards]);
+
+  // Filter by query + optional due-soon filter
+  const filtered = (() => {
+    let results = allCards;
+    if (dueSoonOnly) {
+      results = results.filter((fc) => dueSoonCardIds.has(fc.card.id));
+    }
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      results = results.filter((fc) =>
+        fc.card.title.toLowerCase().includes(q) ||
+        fc.card.description.toLowerCase().includes(q) ||
+        fc.column.name.toLowerCase().includes(q) ||
+        extractTags(fc.card.description).some(({ tag }) => tag.includes(q))
+      );
+    }
+    return results;
+  })();
+
+  // Reset selection when query or filter changes
   useEffect(() => {
     setSelectedIndex(0);
-  }, [query]);
+  }, [query, dueSoonOnly]);
 
   // Focus input on open
   useEffect(() => {
     if (open) {
       setQuery('');
+      setDueSoonOnly(false);
       setSelectedIndex(0);
       setTimeout(() => inputRef.current?.focus(), 0);
     }
@@ -81,7 +104,7 @@ export default function CommandPalette({ board, open, onClose, onSelect }: Comma
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="w-full max-w-lg bg-background border border-border rounded-xl shadow-2xl overflow-hidden">
-        {/* Search input */}
+        {/* Search input + filters */}
         <div className="flex items-center gap-2 px-3 py-3 border-b border-border">
           <Search className="w-4 h-4 text-foreground-muted flex-shrink-0" />
           <Input
@@ -93,6 +116,20 @@ export default function CommandPalette({ board, open, onClose, onSelect }: Comma
             placeholder="Search tasks by title, description, tag, or column..."
             className="flex-1 border-none bg-transparent text-sm focus:outline-none shadow-none ring-0"
           />
+          {/* Due Soon filter chip */}
+          {dueSoonCardIds.size > 0 && (
+            <button
+              onClick={() => setDueSoonOnly(!dueSoonOnly)}
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium transition-colors flex-shrink-0 ${
+                dueSoonOnly
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-background-muted text-foreground-muted hover:text-foreground'
+              }`}
+            >
+              <Clock className="w-3 h-3" />
+              Due Soon
+            </button>
+          )}
           {query && (
             <button
               onClick={() => setQuery('')}
@@ -105,7 +142,13 @@ export default function CommandPalette({ board, open, onClose, onSelect }: Comma
 
         {/* Results */}
         {filtered.length > 0 ? (
-          <div className="max-h-80 overflow-y-auto py-1">
+          <>
+            {dueSoonOnly && (
+              <div className="px-3 py-1.5 text-[11px] text-foreground-muted bg-background-subtle border-b border-border-muted">
+                Showing {filtered.length} task{filtered.length !== 1 ? 's' : ''} due within 7 days
+              </div>
+            )}
+            <div className="max-h-80 overflow-y-auto py-1">
             {filtered.map((fc, i) => (
               <button
                 key={fc.card.id + fc.column.id}
@@ -163,6 +206,11 @@ export default function CommandPalette({ board, open, onClose, onSelect }: Comma
                 </div>
               </button>
             ))}
+            </div>
+          </>
+        ) : dueSoonOnly ? (
+          <div className="px-3 py-8 text-center text-sm text-foreground-muted">
+            No tasks due within the next 7 days
           </div>
         ) : query ? (
           <div className="px-3 py-8 text-center text-sm text-foreground-muted">

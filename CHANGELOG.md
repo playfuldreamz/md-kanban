@@ -2,6 +2,15 @@
 
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
+- feat: drop card animation, auto-scroll, drop line polish
+  
+  Drop line: fixed position at midpoint between cards, corrected same-column
+  index adjustment, header offset for column positioning.
+  Auto-scroll: column scrolls when dragging near top/bottom edges (40px zone).
+  Card animation: state-driven via droppedCardId→isJustDropped, with ref-based
+  forced reflow for browser animation restart on repositioned DOM nodes.
+  Caveat: animation works reliably on same-spot drops, inconsistently on
+  cross-position moves — requires future work on VirtualCardList timing.
 - feat: smoother drag animations + drop position calculation
   
   Column animations:

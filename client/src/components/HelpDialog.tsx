@@ -6,7 +6,7 @@ import {
   AlertDialogFooter,
   AlertDialogClose,
 } from '@appica/ui-react/alert-dialog';
-import { Search, ArrowBackUp, ArrowForwardUp, ClipboardCheck, Clock, CircleCheck, Pencil, Trash, Plus, ChevronRight, AlertTriangle } from '@appica/icons-react';
+import { Search, ArrowBackUp, ArrowForwardUp, ClipboardCheck, Clock, CircleCheck, Pencil, Trash, Plus, ChevronRight, AlertTriangle, Filter } from '@appica/icons-react';
 
 /**
  * Help dialog shown when pressing `?`.
@@ -38,6 +38,7 @@ const FEATURES = [
   { icon: Trash, label: 'Dates', desc: 'Cards auto-stamp creation dates. Hover any card or sub-task to see "Created 3 days ago".' },
   { icon: AlertTriangle, label: 'Plugins', desc: 'Enable due-dates, warning-cards, and assignees via @plugins in preamble.' },
   { icon: Pencil, label: 'Assignees', desc: 'Mention @username in descriptions — renders as colored initial chips (Ⓐ). Toggle in EditCardDialog.' },
+  { icon: Filter, label: 'Due Soon', desc: 'Filter command palette to tasks due within 7 days. Press Due Soon chip in Cmd+K search.' },
 ];
 
 export default function HelpDialog({ open, onClose }: HelpDialogProps) {

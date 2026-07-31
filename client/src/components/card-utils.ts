@@ -100,7 +100,15 @@ export function formatCreatedDate(iso: string): string {
   return `Created ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
-/** Get color for a due date badge: red for overdue, amber for today, blue for upcoming. */
+/** Check if a due date is in the past. */
+export function isDueOverdue(dueDate: string): boolean {
+  const now = new Date();
+  const due = new Date(dueDate);
+  if (isNaN(due.getTime())) return false;
+  return due < now;
+}
+
+/** Get color for a due date badge: red for overdue, amber for today/soon, blue for upcoming. */
 export function getDueColor(dueDate: string): string {
   const now = new Date();
   const due = new Date(dueDate);
