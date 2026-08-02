@@ -117,6 +117,12 @@
 # md-kanban — Roadmap
 
 ## To Do
+- [ ] **Custom scrollbars via CSS** — Replace browser-default scrollbars with thin, themed scrollbars using CSS pseudo-elements. Uses `::-webkit-scrollbar` (Webkit) and `scrollbar-width: thin` (Firefox). Avoids Appica UI ScrollArea component's DOM layer issues. #polish
+  - [ ] **Global scrollbar styles** — Add `::-webkit-scrollbar` rules in index.css: 6px width, transparent track, `var(--background-strong)` rounded thumb.
+  - [ ] **Auto-hide variant** — Add `.kanban-scroll-area` class with transparent-default thumb that reveals on hover (150ms transition).
+  - [ ] **Column component** — Add `kanban-scroll-area` class to the cards overflow div.
+  - [ ] **design.md update** — Document CSS approach, selector table, code examples.
+  - [ ] **Visual verification** — Confirm thin rounded scrollbar in both light/dark modes. Check auto-hide behavior in columns.
 - [ ] **Board templates** — md-kanban init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 3-4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. #polish
   - [ ] **Template format** — Define a JSON template schema: `{ name, description, columns: [{ name, emoji, cards: [{ title, description, tags, children }] }] }`. Templates live in `lib/templates/` as `.json` files.
   - [ ] **Kanban template** — Default 3-column board: "📋 To Do", "🚧 In Progress", "✅ Done" with 2-3 example cards each demonstrating sub-tasks, tags, and due dates.

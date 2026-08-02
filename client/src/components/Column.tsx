@@ -223,7 +223,7 @@ export default function ColumnView({
           )}
         </div>
       ) : (
-        <div ref={cardsAreaRef} className="flex-1 overflow-y-auto">
+        <div ref={cardsAreaRef} className="flex-1 overflow-y-auto kanban-scroll-area">
         <VirtualCardList
           items={visibleCards}
           itemKey={(card) => card.id}

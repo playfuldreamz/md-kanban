@@ -120,8 +120,8 @@ No custom font sizes. Everything uses Appica UI's typographic scale.
 
 - **Body**: `overflow-hidden` — the board fills the viewport
 - **ColumnList**: `overflow-x-auto` — horizontal scroll for many columns
-- **Column card area**: `overflow-y-auto` — vertical scroll for many cards
-- **Scrollbar**: Appica UI's `ScrollArea` component wraps the column list for custom scrollbars
+- **Column card area**: `overflow-y-auto` with class `kanban-scroll-area` — vertical scroll with auto-hiding thumb (appears on hover)
+- **Scrollbar**: Styled via CSS pseudo-elements (`::-webkit-scrollbar` for Webkit, `scrollbar-width` for Firefox). Uses Appica design tokens: thin 6px track, `bg-background-strong` rounded thumb, transparent track
 
 ---
 
@@ -129,7 +129,8 @@ No custom font sizes. Everything uses Appica UI's typographic scale.
 
 ### BoardShell
 
-The root layout component. Full viewport height, flex column.
+The root layout component. Full viewport height, flex column. Horizontal scrolling of columns
+is handled by `ScrollArea` inside `ColumnList`.
 
 ```tsx
 <div className="h-screen flex flex-col bg-background">
@@ -140,11 +141,62 @@ The root layout component. Full viewport height, flex column.
     </div>
     <ThemeToggle />
   </header>
-  <ScrollArea className="flex-1">
-    <div className="flex gap-4 p-4 h-full items-start">
-      {columns.map(col => <Column key={col.id} column={col} />)}
-    </div>
-  </ScrollArea>
+  <div className="flex-1 flex overflow-hidden">
+    <ColumnList columns={columns} ... />
+  </div>
+</div>
+```
+
+### Scrollbar styling
+
+> **Why CSS, not Appica UI ScrollArea?**  
+> We initially tried Appica UI's `ScrollArea` component (as the original design spec
+> suggested). It failed because `ScrollArea` wraps content in extra DOM layers
+> (`Root → Viewport → Content → your div`). The `Content` element is auto-sized,
+> which breaks CSS `height: 100%` resolution on child elements — percentage heights
+> need an explicit-height parent, but `Content` is `height: auto`. This caused the
+> entire board to scroll vertically instead of individual columns scrolling internally.
+> Attempts to work around this (ref threading, `calc()` heights, ResizeObserver hacks)
+> all introduced more problems than they solved.
+>
+> **Resolution**: Use CSS pseudo-elements (`::-webkit-scrollbar`, `scrollbar-width`).
+> This achieves the identical visual result (thin rounded thumbs, theme-aware colors,
+> auto-hide behavior) without touching the component tree at all. Zero layout risk.
+
+Custom scrollbars are styled via CSS pseudo-elements targeting the browser's native
+scrollbar. No wrapper components, no DOM changes, no height-chain breakage.
+
+**Webkit** (Chrome, Edge, Safari):
+```css
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--background-strong); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--foreground-muted); }
+```
+
+**Firefox**:
+```css
+* { scrollbar-width: thin; scrollbar-color: var(--background-strong) transparent; }
+```
+
+**Auto-hide variant** (`.kanban-scroll-area`): The vertical scrollbar inside columns
+uses transparent thumb by default, revealing the themed thumb on hover with a
+150ms transition.
+
+| Location | Selector | Behavior |
+|----------|----------|----------|
+| ColumnList (horizontal) | `::-webkit-scrollbar` (global) | Always-visible thin scrollbar |
+| Column cards (vertical) | `.kanban-scroll-area::-webkit-scrollbar-thumb` | Auto-hide: transparent → visible on hover |
+
+```tsx
+// Horizontal scroll (ColumnList) — native overflow, global scrollbar styles
+<div className="flex-1 overflow-x-auto overflow-y-hidden">
+  <div className="flex gap-6 p-6 h-full items-start">{columns}</div>
+</div>
+
+// Vertical scroll with auto-hide thumb (Column cards)
+<div ref={cardsAreaRef} className="flex-1 overflow-y-auto kanban-scroll-area">
+  <VirtualCardList ... />
 </div>
 ```
 
@@ -377,7 +429,7 @@ Our additional responsibilities:
 - ❌ Custom CSS classes — Appica UI components + Tailwind utilities cover everything
 - ❌ Emoji as UI icons — column emoji from the file is fine, but don't use emoji in buttons/labels
 - ❌ Fixed pixel widths besides `w-72` for columns — everything else is relative or token-based
-- ❌ Custom scrollbar CSS — use Appica UI `ScrollArea`
+- ❌ Custom scrollbar component libraries — use CSS pseudo-elements for scrollbar styling
 - ❌ Animation without `motion-safe:` — every transition must respect reduced motion
 - ❌ Hardcoded color values — always use Appica UI tokens (`text-foreground`, not `text-gray-900`)
 - ❌ `@appica/ui-react` direct import — use subpath imports for tree-shaking (`@appica/ui-react/button`)
