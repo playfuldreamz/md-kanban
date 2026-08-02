@@ -1,0 +1,84 @@
+{
+  "name": "Bug Tracker",
+  "title": "Bug Tracker",
+  "description": "Track software bugs from report to resolution. 4-column workflow with severity labels.",
+  "columns": [
+    {
+      "name": "Reported",
+      "cards": [
+        {
+          "title": "Login fails on Safari after OAuth redirect",
+          "description": "Steps: 1. Open Safari 17.2 2. Click Sign In with Google 3. Observe blank white screen instead of dashboard. Expected: redirect to /dashboard. #bug #critical",
+          "tags": ["bug", "critical"]
+        },
+        {
+          "title": "Memory leak in analytics dashboard",
+          "description": "Heap grows ~50MB per hour when dashboard tab is left open. Chrome 120, Windows 11. #bug #important",
+          "tags": ["bug", "important"]
+        },
+        {
+          "title": "Dark mode colors inverted on chart legends",
+          "description": "Pie chart legend text is white-on-white in dark mode. All chart types affected. #bug #frontend",
+          "tags": ["bug", "frontend"]
+        }
+      ]
+    },
+    {
+      "name": "Triaging",
+      "cards": [
+        {
+          "title": "Investigate spike in 502 errors from payment API",
+          "description": "Started Dec 5 at 14:00 UTC. 300% increase in 502s from Stripe webhook endpoint. @bob #bug #critical",
+          "tags": ["bug", "critical"],
+          "children": [
+            { "title": "Check Stripe status page" },
+            { "title": "Review server logs around 14:00 UTC" },
+            { "title": "Verify API key expiration dates" }
+          ]
+        },
+        {
+          "title": "Mobile nav menu not closing on outside tap",
+          "description": "iOS Safari only. Menu stays open when tapping overlay. Regression from v2.3.1. #bug #frontend",
+          "tags": ["bug", "frontend"]
+        }
+      ]
+    },
+    {
+      "name": "Fixing",
+      "cards": [
+        {
+          "title": "Patch XSS vulnerability in search input",
+          "description": "Unescaped user input in /search?q= reflects into page. CVE score pending. @alice #bug #critical #security",
+          "tags": ["bug", "critical", "security"]
+        },
+        {
+          "title": "Fix CSV export encoding for CJK characters",
+          "description": "Japanese and Chinese text garbled in exported CSV. Need BOM + UTF-8. #bug #backend",
+          "tags": ["bug", "backend"]
+        }
+      ]
+    },
+    {
+      "name": "Resolved",
+      "cards": [
+        {
+          "title": "Update dependencies with known CVEs",
+          "description": "Patched express (4.18→4.19), ws (8.16→8.17), and vite (5.0→5.1). All CVEs below 7.0. #security",
+          "tags": ["security"],
+          "done": true
+        },
+        {
+          "title": "Fix email verification link expiring too soon",
+          "description": "Changed token TTL from 1 hour to 24 hours. Updated tests. due:2026-07-15 #bug",
+          "tags": ["bug"],
+          "done": true,
+          "children": [
+            { "title": "Update token TTL config", "done": true },
+            { "title": "Update email template copy", "done": true },
+            { "title": "Add regression tests", "done": true }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -13,8 +13,10 @@
     "lib/routes.js",
     "lib/server-utils.js",
     "lib/plugin-runner.js",
+    "lib/templates.js",
     "lib/export-html.js",
     "lib/builtin/",
+    "lib/templates/",
     "client/dist/"
   ],
   "scripts": {

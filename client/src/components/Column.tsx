@@ -1,7 +1,7 @@
 import { useCallback, useState, useRef } from 'react';
 import { Badge } from '@appica/ui-react/badge';
 import { Button } from '@appica/ui-react/button';
-import { ClipboardCheck, Clock, CircleCheck, LayoutKanban, AlertTriangle, Sparkles, Trash } from '@appica/icons-react';
+import { ClipboardCheck, Clock, CircleCheck, LayoutKanban, AlertTriangle, Sparkles, Trash, Bug, Search, Wrench, Rocket, Bookmark, Eye, Book2, BookFilled } from '@appica/icons-react';
 import type { Column } from '../types';
 import KanbanCard from './KanbanCard';
 import AddCardForm from './AddCardForm';
@@ -17,15 +17,41 @@ function columnIcon(col: Column): { icon: React.ReactNode; priority: string | nu
   if (id === 'in-progress' || name.includes('progress') || name.includes('doing') || name.includes('active')) return { icon: <Clock className="w-4 h-4" />, priority: null };
   if (id === 'done' || name.includes('done') || name.includes('complete')) return { icon: <CircleCheck className="w-4 h-4" />, priority: null };
 
+  // Bug Tracker columns
+  if (name.includes('reported') || name.includes('submitted'))
+    return { icon: <Bug className="w-4 h-4 text-red-500" />, priority: null };
+  if (name.includes('triaging') || name.includes('triage'))
+    return { icon: <Search className="w-4 h-4 text-amber-500" />, priority: null };
+  if (name.includes('fixing') || name.includes('fix '))
+    return { icon: <Wrench className="w-4 h-4 text-blue-500" />, priority: null };
+  if (name.includes('resolved'))
+    return { icon: <CircleCheck className="w-4 h-4 text-green-500" />, priority: null };
+
+  // Sprint Planning columns
+  if (name.includes('backlog'))
+    return { icon: <Bookmark className="w-4 h-4" />, priority: null };
+  if (name.includes('sprint'))
+    return { icon: <Rocket className="w-4 h-4" />, priority: null };
+
+  // Review column (overrides the generic Sparkles-blue mapping above)
+  if (name.includes('review') || name.includes('testing') || name.includes('qa'))
+    return { icon: <Eye className="w-4 h-4 text-blue-500" />, priority: null };
+
+  // Reading List columns
+  if (name.includes('to read') || name.includes('want to read'))
+    return { icon: <Book2 className="w-4 h-4" />, priority: null };
+  if (name.includes('reading'))
+    return { icon: <BookFilled className="w-4 h-4" />, priority: null };
+  if (name.includes('finished'))
+    return { icon: <CircleCheck className="w-4 h-4 text-green-500" />, priority: null };
+
   // Priority columns: map to appropriate icons with colored accents
   if (name.includes('critical') || name.includes('urgent') || name.includes('blocker'))
     return { icon: <AlertTriangle className="w-4 h-4 text-red-500" />, priority: 'critical' };
   if (name.includes('important') || name.includes('high') || name.includes('priority'))
     return { icon: <AlertTriangle className="w-4 h-4 text-amber-500" />, priority: 'important' };
-  if (name.includes('polish') || name.includes('nice') || name.includes('low') || name.includes('later') || name.includes('backlog'))
+  if (name.includes('polish') || name.includes('nice') || name.includes('low') || name.includes('later'))
     return { icon: <Sparkles className="w-4 h-4 text-emerald-500" />, priority: 'polish' };
-  if (name.includes('review') || name.includes('testing') || name.includes('qa'))
-    return { icon: <Sparkles className="w-4 h-4 text-blue-500" />, priority: null };
 
   return { icon: <LayoutKanban className="w-4 h-4" />, priority: null };
 }

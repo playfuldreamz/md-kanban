@@ -6,7 +6,7 @@ import {
   AlertDialogFooter,
   AlertDialogClose,
 } from '@appica/ui-react/alert-dialog';
-import { Search, ArrowBackUp, ArrowForwardUp, ClipboardCheck, Clock, CircleCheck, Pencil, Trash, Plus, ChevronRight, AlertTriangle, Filter } from '@appica/icons-react';
+import { Search, ArrowBackUp, ArrowForwardUp, ClipboardCheck, Clock, CircleCheck, Pencil, Trash, Plus, ChevronRight, AlertTriangle, Filter, LayoutKanban } from '@appica/icons-react';
 
 /**
  * Help dialog shown when pressing `?`.
@@ -47,6 +47,7 @@ const FEATURES = [
   { icon: AlertTriangle, label: 'Plugins', desc: 'Enable due-dates, warning-cards, and assignees via @plugins in preamble.' },
   { icon: Pencil, label: 'Assignees', desc: 'Mention @username in descriptions — renders as colored initial chips (Ⓐ). Toggle in EditCardDialog.' },
   { icon: Filter, label: 'Due Soon', desc: 'Filter command palette to tasks due within 7 days. Press Due Soon chip in Cmd+K search.' },
+  { icon: LayoutKanban, label: 'Templates', desc: 'Scaffold a board with md-kanban init --template <name>. Available: kanban, bug-tracker, sprint-planning, reading-list. Use --list to see all.' },
 ];
 
 export default function HelpDialog({ open, onClose }: HelpDialogProps) {

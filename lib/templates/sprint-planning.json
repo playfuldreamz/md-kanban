@@ -1,0 +1,106 @@
+{
+  "name": "Sprint Planning",
+  "title": "Sprint Board",
+  "description": "Agile sprint planning with backlog, sprint commitment, and review columns.",
+  "columns": [
+    {
+      "name": "Backlog",
+      "cards": [
+        {
+          "title": "Dark mode for admin panel",
+          "description": "Add theme toggle to admin dashboard. 5 story points. Designs in Figma. #frontend #polish",
+          "tags": ["frontend", "polish"]
+        },
+        {
+          "title": "Bulk user import from CSV",
+          "description": "Admin feature to upload CSV and batch-create users with role assignment. 8 points. #backend #feature",
+          "tags": ["backend", "feature"],
+          "children": [
+            { "title": "CSV parser with validation" },
+            { "title": "Batch insert with rollback" },
+            { "title": "Progress WebSocket for large imports" }
+          ]
+        },
+        {
+          "title": "Webhook retry with exponential backoff",
+          "description": "Currently fails after 1 attempt. Add 3 retries with 1min/5min/15min delays. 3 points. #backend",
+          "tags": ["backend"]
+        }
+      ]
+    },
+    {
+      "name": "This Sprint",
+      "cards": [
+        {
+          "title": "Two-factor authentication",
+          "description": "TOTP-based 2FA with recovery codes. 13 points. @alice @bob #feature #critical",
+          "tags": ["feature", "critical"],
+          "children": [
+            { "title": "Generate TOTP secret + QR code" },
+            { "title": "Verify TOTP on login" },
+            { "title": "Recovery code generation + redemption" },
+            { "title": "Disable/regenerate flow" }
+          ]
+        },
+        {
+          "title": "API rate limiting dashboard",
+          "description": "Visualize per-user rate limit consumption. 5 points. @alice #frontend #feature",
+          "tags": ["frontend", "feature"]
+        },
+        {
+          "title": "Database connection pooling",
+          "description": "Replace single-connection with pg-pool (min 2, max 20). 3 points. #backend #important",
+          "tags": ["backend", "important"]
+        }
+      ]
+    },
+    {
+      "name": "In Progress",
+      "cards": [
+        {
+          "title": "User profile page redesign",
+          "description": "New layout with tabs: Profile, Security, Billing. 8 points. due:2026-08-20 @bob #frontend #feature",
+          "tags": ["frontend", "feature"]
+        }
+      ]
+    },
+    {
+      "name": "Review",
+      "cards": [
+        {
+          "title": "Email notification service",
+          "description": "Send transactional emails via Resend API. Templates for welcome, reset, verify. 8 points. @alice #backend #feature",
+          "tags": ["backend", "feature"],
+          "children": [
+            { "title": "Resend SDK integration" },
+            { "title": "Welcome email template", "done": true },
+            { "title": "Password reset template", "done": true },
+            { "title": "Email verification template" }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Done",
+      "cards": [
+        {
+          "title": "OAuth 2.0 Google provider",
+          "description": "Sign in with Google using OAuth 2.0. 5 points. #backend #feature",
+          "tags": ["backend", "feature"],
+          "done": true
+        },
+        {
+          "title": "Session management with Redis",
+          "description": "Replace in-memory sessions with Redis store. 3 points. #backend",
+          "tags": ["backend"],
+          "done": true,
+          "children": [
+            { "title": "Redis connection setup", "done": true },
+            { "title": "Session serialization", "done": true },
+            { "title": "Cleanup cron for expired sessions", "done": true }
+          ]
+        }
+      ]
+    }
+  ]
+}

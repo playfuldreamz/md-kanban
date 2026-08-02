@@ -1,0 +1,72 @@
+{
+  "name": "Kanban",
+  "title": "Project Board",
+  "description": "Standard 3-column workflow for general project management.",
+  "columns": [
+    {
+      "name": "To Do",
+      "cards": [
+        {
+          "title": "Set up CI/CD pipeline",
+          "description": "Automate build, test, and deploy for the main branch. due:2026-09-01 #devops",
+          "tags": ["devops"],
+          "children": [
+            { "title": "Choose CI platform", "description": "Evaluate GitHub Actions vs CircleCI" },
+            { "title": "Write build config", "description": "Docker build + test stage" },
+            { "title": "Add deploy step", "description": "Push to staging on merge to main" }
+          ]
+        },
+        {
+          "title": "Write API documentation",
+          "description": "Document all v2 endpoints with request/response examples. @alice #docs",
+          "tags": ["docs"]
+        },
+        {
+          "title": "Refactor user service",
+          "description": "Split monolithic service into smaller modules. #backend #important",
+          "tags": ["backend", "important"]
+        }
+      ]
+    },
+    {
+      "name": "In Progress",
+      "cards": [
+        {
+          "title": "Fix login redirect loop",
+          "description": "Users on Safari get stuck after OAuth callback. @bob #bug #critical",
+          "tags": ["bug", "critical"],
+          "children": [
+            { "title": "Reproduce on Safari 17+", "description": "Use BrowserStack for testing" },
+            { "title": "Trace OAuth callback flow", "description": "Check session cookie SameSite settings" }
+          ]
+        },
+        {
+          "title": "Add rate limiting middleware",
+          "description": "Protect API against abuse. 100 req/min per IP. #backend #important",
+          "tags": ["backend", "important"]
+        }
+      ]
+    },
+    {
+      "name": "Done",
+      "cards": [
+        {
+          "title": "Initialize project repository",
+          "description": "Set up repo with .gitignore, README, and initial project structure.",
+          "done": true
+        },
+        {
+          "title": "Design database schema",
+          "description": "Users, sessions, projects tables with migrations. #backend",
+          "tags": ["backend"],
+          "done": true,
+          "children": [
+            { "title": "Users table", "done": true },
+            { "title": "Projects table", "done": true },
+            { "title": "Indexes for search", "done": true }
+          ]
+        }
+      ]
+    }
+  ]
+}

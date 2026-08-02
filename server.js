@@ -6,7 +6,9 @@
  * Reads one or more TODO.md files, serves a Kanban board API, watches
  * for changes, and pushes live updates to connected browsers via WebSocket.
  *
- * Usage: node server.js [--file <path>]... [--dir <path>] [--port <n>] [--no-open]
+ * Usage:
+ *   md-kanban [options]                        Start the Kanban server
+ *   md-kanban init [--template <name>] [--force] [--list]  Scaffold a TODO.md
  */
 
 const express = require('express');
@@ -17,10 +19,19 @@ const fs = require('fs');
 const path = require('path');
 const { registerRoutes } = require('./lib/routes');
 const { readAndParse, writeBoard, findCard, createCard, FORMAT_GUIDE } = require('./lib/server-utils');
+const { loadTemplate, listTemplates, renderTemplate } = require('./lib/templates');
 
-// ─── CLI args ────────────────────────────────────────────────────────────────
+// ─── CLI: init subcommand ───────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
+
+if (args[0] === 'init') {
+  handleInitCommand(args.slice(1));
+  // handleInitCommand exits — if it returns, something went wrong
+  process.exit(0);
+}
+
+// ─── CLI args ────────────────────────────────────────────────────────────────
 const filePaths = [];
 let port = 3456;
 let openBrowser = true;
@@ -44,14 +55,21 @@ for (let i = 0; i < args.length; i++) {
     console.log(`
   md-kanban — Interactive Kanban board for your TODO.md
 
-  Usage: npx md-kanban [options]
+  Usage:
+    npx md-kanban [options]                 Start the server
+    npx md-kanban init [--template <name>]  Scaffold a TODO.md from a template
 
-  Options:
+  Server options:
     --file <path>   Path to TODO.md (default: ./TODO.md, repeatable)
     --dir <path>    Watch all .md files in a directory
     --port <n>      Port to listen on (default: 3456)
     --no-open       Don't open the browser automatically
     --help, -h      Show this help
+
+  Init options:
+    md-kanban init --template <name>   Use a specific template (default: kanban)
+    md-kanban init --list              List available templates
+    md-kanban init --force             Overwrite existing TODO.md
 `);
     process.exit(0);
   }
@@ -231,3 +249,79 @@ main().catch(err => {
   console.error('Fatal error:', err);
   process.exit(1);
 });
+
+// ─── Init command handler ───────────────────────────────────────────────────
+
+/**
+ * Handle `md-kanban init` subcommand.
+ * Writes a template TODO.md to the current directory and exits.
+ * @param {string[]} initArgs — args after "init"
+ */
+function handleInitCommand(initArgs) {
+  let templateName = 'kanban';
+  let force = false;
+  let listMode = false;
+
+  for (let i = 0; i < initArgs.length; i++) {
+    if (initArgs[i] === '--template' && initArgs[i + 1]) {
+      templateName = initArgs[++i];
+    } else if (initArgs[i] === '--force') {
+      force = true;
+    } else if (initArgs[i] === '--list') {
+      listMode = true;
+    } else if (initArgs[i] === '--help' || initArgs[i] === '-h') {
+      console.log(`
+  md-kanban init — Scaffold a TODO.md from a template
+
+  Usage: md-kanban init [options]
+
+  Options:
+    --template <name>  Template to use (default: kanban)
+    --list             List available templates
+    --force            Overwrite existing TODO.md without prompting
+    --help, -h         Show this help
+
+  Available templates:
+    kanban            Standard 3-column workflow for general project management.
+    bug-tracker       Track software bugs from report to resolution.
+    sprint-planning   Agile sprint planning with backlog, sprint, and review columns.
+    reading-list      Track books and articles from your to-read pile through to finished.
+`);
+      process.exit(0);
+    }
+  }
+
+  if (listMode) {
+    const templates = listTemplates();
+    if (templates.length === 0) {
+      console.log('No templates found.');
+    } else {
+      for (const t of templates) {
+        console.log(t.name + ' — ' + t.description);
+      }
+    }
+    process.exit(0);
+  }
+
+  const tmpl = loadTemplate(templateName);
+  if (!tmpl) {
+    console.error(`Error: Template "${templateName}" not found.`);
+    console.error('Run `md-kanban init --list` to see available templates.');
+    process.exit(1);
+  }
+
+  const targetPath = path.resolve('./TODO.md');
+  if (fs.existsSync(targetPath) && !force) {
+    console.error(`TODO.md already exists. Use --force to overwrite.`);
+    process.exit(1);
+  }
+
+  const output = renderTemplate(tmpl);
+  fs.writeFileSync(targetPath, output, 'utf-8');
+
+  const colCount = tmpl.columns ? tmpl.columns.length : 0;
+  const cardCount = tmpl.columns
+    ? tmpl.columns.reduce((sum, col) => sum + (col.cards ? col.cards.length : 0), 0)
+    : 0;
+  console.log(`Created TODO.md from '${templateName}' template (${colCount} columns, ${cardCount} cards).`);
+}

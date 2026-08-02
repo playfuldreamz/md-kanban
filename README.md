@@ -2,10 +2,10 @@
 
 ## Overview
 
-**kanban-md** is a lightweight CLI tool that renders any `TODO.md` as an interactive Kanban board in the browser. Columns map to `##` markdown sections; cards map to `- [ ]` / `- [x]` list items. Edits in the browser write back to the file. File changes (git pull, external editor) push to the browser via WebSocket. The file is always the source of truth — closing the tab loses nothing.
+**md-kanban** is a lightweight CLI tool that renders any `TODO.md` as an interactive Kanban board in the browser. Columns map to `##` markdown sections; cards map to `- [ ]` / `- [x]` list items. Edits in the browser write back to the file. File changes (git pull, external editor) push to the browser via WebSocket. The file is always the source of truth — closing the tab loses nothing.
 
 **Install footprint**: ~2MB (chokidar + express + ws + pre-built React app).  
-**Runtime**: `npx md-kanban` in any project with a `TODO.md`.  
+**Quick start**: `npx md-kanban init` scaffolds a TODO.md from a template, then `npx md-kanban` opens the board.  
 **Frontend**: Appica UI components on React 19 + Tailwind CSS v4, built with Vite and shipped as static assets inside the package.
 
 ---
@@ -16,11 +16,12 @@
 2. [Architecture](#architecture)
 3. [Data Model](#data-model)
 4. [TODO.md Schema](#todomd-schema)
-5. [API Surface](#api-surface)
-6. [Frontend Component Tree](#frontend-component-tree)
-7. [Sync Protocol](#sync-protocol)
-8. [Failure Modes](#failure-modes)
-9. [Implementation Sequence](#implementation-sequence)
+5. [Board Templates](#board-templates)
+6. [API Surface](#api-surface)
+7. [Frontend Component Tree](#frontend-component-tree)
+8. [Sync Protocol](#sync-protocol)
+9. [Failure Modes](#failure-modes)
+10. [Implementation Sequence](#implementation-sequence)
 
 ---
 
@@ -232,6 +233,67 @@ The parser preserves `rawLine` for every card. When serializing, if a card hasn'
 - Manual formatting (spacing, inline code, links) survives untouched
 - Cards edited in the browser get canonical formatting on save
 - The file diff is minimal — only changed lines
+
+---
+
+## Board Templates
+
+`md-kanban init` scaffolds a TODO.md from preset templates. Templates are JSON files in `lib/templates/` defining columns, cards, sub-tasks, tags, and due dates. Column names are plain text — Appica icons are assigned at render time by the `columnIcon()` mapping in `Column.tsx`.
+
+### Available templates
+
+| Template | Columns | Use case |
+|----------|---------|----------|
+| `kanban` (default) | To Do, In Progress, Done | General project management |
+| `bug-tracker` | Reported, Triaging, Fixing, Resolved | Software bug tracking with severity labels |
+| `sprint-planning` | Backlog, This Sprint, In Progress, Review, Done | Agile sprint management with story points |
+| `reading-list` | To Read, Reading, Finished | Track books and articles with notes and ratings |
+
+### Usage
+
+```bash
+# Scaffold a TODO.md (default: kanban)
+md-kanban init
+
+# Specific template
+md-kanban init --template bug-tracker
+
+# List all available templates
+md-kanban init --list
+
+# Overwrite existing TODO.md
+md-kanban init --template sprint-planning --force
+```
+
+### Template format
+
+Templates are JSON files with this schema:
+
+```json
+{
+  "name": "Kanban",
+  "title": "Project Board",
+  "description": "Standard 3-column workflow for general project management.",
+  "columns": [
+    {
+      "name": "To Do",
+      "cards": [
+        {
+          "title": "Example task",
+          "description": "With optional #tags and due:YYYY-MM-DD syntax.",
+          "tags": ["feature"],
+          "done": false,
+          "children": [
+            { "title": "Sub-task", "done": true }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+Cards support: `title` (required), `description`, `tags` (array of `#tagname` strings), `children` (recursive sub-tasks), and `done` (defaults `false`). The `FORMAT_GUIDE` preamble is auto-prepended to every generated file.
 
 ---
 

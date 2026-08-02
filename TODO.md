@@ -117,19 +117,6 @@
 # md-kanban — Roadmap
 
 ## To Do
-- [ ] **Custom scrollbars via CSS** — Replace browser-default scrollbars with thin, themed scrollbars using CSS pseudo-elements. Uses `::-webkit-scrollbar` (Webkit) and `scrollbar-width: thin` (Firefox). Avoids Appica UI ScrollArea component's DOM layer issues. #polish
-  - [ ] **Global scrollbar styles** — Add `::-webkit-scrollbar` rules in index.css: 6px width, transparent track, `var(--background-strong)` rounded thumb.
-  - [ ] **Auto-hide variant** — Add `.kanban-scroll-area` class with transparent-default thumb that reveals on hover (150ms transition).
-  - [ ] **Column component** — Add `kanban-scroll-area` class to the cards overflow div.
-  - [ ] **design.md update** — Document CSS approach, selector table, code examples.
-  - [ ] **Visual verification** — Confirm thin rounded scrollbar in both light/dark modes. Check auto-hide behavior in columns.
-- [ ] **Board templates** — md-kanban init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 3-4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. #polish
-  - [ ] **Template format** — Define a JSON template schema: `{ name, description, columns: [{ name, emoji, cards: [{ title, description, tags, children }] }] }`. Templates live in `lib/templates/` as `.json` files.
-  - [ ] **Kanban template** — Default 3-column board: "📋 To Do", "🚧 In Progress", "✅ Done" with 2-3 example cards each demonstrating sub-tasks, tags, and due dates.
-  - [ ] **Bug Tracker template** — Columns: "🐛 Reported", "🔍 Triaging", "🔧 Fixing", "✅ Resolved". Example cards with #bug tag, reproduction steps in description, severity labels.
-  - [ ] **CLI integration** — `md-kanban init --template <name>` writes the template to `./TODO.md`. If file exists, prompt to overwrite (or use `--force`). `md-kanban init --list` prints available templates.
-  - [ ] **HelpDialog** — Add "Templates" section showing `md-kanban init --template` usage + available template names
-  - [ ] **Tests** — 3 cases: init with each template verifies output structure, --list output, overwrite prompt behavior
 - [ ] **Column WIP limits** — Per-column Work-In-Progress limits (e.g. "In Progress" max 5). Column header turns amber when exceeded. Configured via @wip block in preamble. #polish
   - [ ] **Preamble parser** — Add `parseWipLimits()` to parser.js: reads `@wip {"in-progress":5,"review":3}` from preamble HTML comment. Stores as `column.wipLimit` on matching columns.
   - [ ] **Column header UI** — When `column.wipLimit` is set and card count exceeds it, header badge turns amber (`bg-warning-subtle text-warning-foreground`) and shows "6/5" instead of just "6". Add a subtle warning icon.
@@ -138,10 +125,6 @@
   - [ ] **Writer** — serializeBoard appends `@wip {...}` to preamble when columns have wipLimit set
   - [ ] **Tests** — 5 cases: parser extracts @wip JSON, writer round-trips @wip, header badge at/over limit, drag rejection, AddCardForm disabled state
   - [ ] **HelpDialog + design.md** — Document @wip syntax, column header behavior, drag-drop guard
-- [ ] **Demo: assignees** — Verify the assignees plugin renders correctly in all views. This card has @alice and @bob assigned. #polish
-  - [ ] **KanbanCard** — Colored initial chips Ⓐ Ⓑ appear next to tags. Hover shows "Alice" / "Bob" via Tooltip. Colors match @assignees config or auto-assigned palette.
-  - [ ] **EditCardDialog** — Assignee section shows @alice and @bob as toggle chips. Quick-toggle buttons appear for both.
-  - [ ] **CommandPalette** — Searching "alice" finds this card. Assignee chips visible in results.
 - [ ] **E2E tests with Playwright** — Browser-based tests: open board → drag card → verify file on disk → verify WebSocket sync. Current test suite is solid (92 tests) but has no browser automation. #polish
   - [ ] **Playwright setup** — Add `playwright` devDependency + `client/e2e/` directory. Configure to start server.js before tests, kill after. Use a temp TODO.md fixture for each test.
   - [ ] **Critical path tests** — (1) Board renders with columns + cards from fixture, (2) Checkbox toggle updates card + persists after reload, (3) Drag card between columns → file updated on disk, (4) Add card via inline form → appears in column + file, (5) Delete card via button → removed from board + file, (6) Edit card title/description via dialog → file reflects changes.
@@ -226,6 +209,10 @@
   - [x] **useUndoRedo** — ref-based ring buffer, useState flags for reactivity, deep-clones states
   - [x] **useBoard** — userDispatch wraps all user actions with pushState, doUndo/doRedo dispatch BOARD_SYNC
   - [x] **BoardShell** — undo/redo buttons in header, keyboard shortcut listeners
+- [x] **Demo: assignees** — Verify the assignees plugin renders correctly in all views. This card has @alice and @bob assigned. #polish
+  - [x] **KanbanCard** — Colored initial chips Ⓐ Ⓑ appear next to tags. Hover shows "Alice" / "Bob" via Tooltip. Colors match @assignees config or auto-assigned palette.
+  - [x] **EditCardDialog** — Assignee section shows @alice and @bob as toggle chips. Quick-toggle buttons appear for both.
+  - [x] **CommandPalette** — Searching "alice" finds this card. Assignee chips visible in results.
 - [x] **Card pinning** — Pin cards to the top of their column. Hover-revealed pin icon. Pinned cards sort above unpinned, most recently pinned first. Unpins on drag below pinned section. `` comment in rawLine. #important
   - [x] **Parser/writer** — recognize `<!-- pinned -- >` in rawLine → `card.pinned`, append on serialize
   - [x] **Server** — PUT /api/cards/:id accepts `{ pinned: true/false }`
@@ -268,9 +255,9 @@
   - [x] **First-run overlay** — on first visit (localStorage flag), show a quick guided tour pointing at header buttons, search, undo, theme toggle, etc.
 - [x] **Plugin system for parser extensions** — Hook-based middleware at parse/serialize points. Configured via `@plugins` block in preamble. Ships with due-dates and warning-cards plugins. Users can drop `.js` files in `~/md-kanban/plugins/`. #polish
   - [x] **Plugin API** — `lib/plugin-runner.js`: loads named plugins from config, calls `parseCard()` and `serializeCard()` hooks per card
-  - [ ] **Preamble config** — parser reads `@plugins due-dates, warning-cards` from HTML comment block
+  - [x] **Preamble config** — parser reads `@plugins due-dates, warning-cards` from HTML comment block
   - [x] **due-dates plugin** — extracts `due:YYYY-MM-DD` from descriptions → `card.dueDate`, date picker in EditCardDialog, colored badge in KanbanCard
-  - [ ] **warning-cards plugin** — recognizes `- [!] **Title**` syntax → `card.warning = true`, amber left border, warning toggle in EditCardDialog
+  - [x] **warning-cards plugin** — recognizes `- [!] **Title**` syntax → `card.warning = true`, amber left border, warning toggle in EditCardDialog
   - [x] **User plugin dir** — autoload `.js` files from `<project>/.kanban/plugins/` or `~/md-kanban/plugins/`
   - [x] **KanbanCard styling** — warning cards get amber left border, overdue cards get red/amber/blue badge
   - [x] **Docs update** — HelpDialog, README, design.md, FORMAT_GUIDE updated with plugin docs and new syntax
@@ -278,3 +265,20 @@
   - [x] **KanbanCard** — Amber 3px left border via `border-l-[3px] border-l-amber-500` (or Appica warning token). Visible at all times, not just on hover.
   - [x] **EditCardDialog** — Warning toggle switch is ON. Toggling off changes - [!] back to - [ ] in the file.
   - [x] **CommandPalette** — Warning indicator (⚠ or amber dot) visible in search results for this card.
+- [x] **Custom scrollbars via CSS** — Replace browser-default scrollbars with thin, themed scrollbars using CSS pseudo-elements. Uses `::-webkit-scrollbar` (Webkit) and `scrollbar-width: thin` (Firefox). Avoids Appica UI ScrollArea component's DOM layer issues. #polish
+  - [x] **Global scrollbar styles** — Add `::-webkit-scrollbar` rules in index.css: 6px width, transparent track, `var(--background-strong)` rounded thumb.
+  - [x] **Auto-hide variant** — Add `.kanban-scroll-area` class with transparent-default thumb that reveals on hover (150ms transition).
+  - [x] **Column component** — Add `kanban-scroll-area` class to the cards overflow div.
+  - [x] **design.md update** — Document CSS approach, selector table, code examples.
+  - [x] **Visual verification** — Confirm thin rounded scrollbar in both light/dark modes. Check auto-hide behavior in columns.
+- [x] **Board templates** — md-kanban init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. No emojis — column names are plain text, Appica icons assigned via columnIcon() mapping. #polish
+  - [x] **Template format** — JSON template schema in `lib/templates/`: `{ name, title, description, columns: [{ name, cards: [{ title, description, tags, children, done }] }] }`. `lib/templates.js` provides loadTemplate(), listTemplates(), renderTemplate() with FORMAT_GUIDE preamble auto-prepend.
+  - [x] **Kanban template** — Default 3-column board: To Do, In Progress, Done. 7 root cards + 8 sub-tasks demonstrating tags, due dates, assignees, and nested children.
+  - [x] **Bug Tracker template** — 4 columns: Reported, Triaging, Fixing, Resolved. 9 root cards with #bug tags, reproduction steps, severity labels, and sub-tasks.
+  - [x] **Sprint Planning template** — 5 columns: Backlog, This Sprint, In Progress, Review, Done. 10 root cards with story points, #feature/#backend tags, and multi-level sub-tasks.
+  - [x] **Reading List template** — 3 columns: To Read, Reading, Finished. 8 root cards with author info, ratings, chapter tracking sub-tasks.
+  - [x] **CLI integration** — `md-kanban init --template <name>` writes template to ./TODO.md. `--force` overwrites existing file (required if TODO.md exists). `--list` prints available templates. `--help` shows usage.
+  - [x] **Column icon mappings** — Added Bug/Search/Wrench/Rocket/Bookmark/Eye/Book2/BookFilled to columnIcon() in Column.tsx for all new template column names.
+  - [x] **HelpDialog** — Added "Templates" feature entry with LayoutKanban icon showing `md-kanban init --template` usage + available template names.
+  - [x] **Documentation** — README.md: added Board Templates section with table, usage, and JSON schema. design.md: updated Icons table with full columnIcon() mapping, added Templates section.
+  - [x] **Tests** — 10 cases in lib/templates.test.js: loadTemplate for all 4 templates + invalid, listTemplates, renderTemplate round-trip, sub-tasks, tags, all-parse validation.

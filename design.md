@@ -206,11 +206,13 @@ Each column is an Appica UI `Card` with a header, scrollable card list, and inli
 
 ```tsx
 <Card className="w-72 flex-shrink-0 flex flex-col max-h-full">
-  {/* Header */}
+  {/* Header — Appica icon via columnIcon(), emoji stripped via displayName() */}
   <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border">
-    {column.emoji && <span className="text-sm">{column.emoji}</span>}
-    <span className="text-sm font-medium text-foreground truncate">{column.name}</span>
-    <Badge variant="neutral" className="ml-auto">{column.cards.length}</Badge>
+    {icon}
+    <span className="text-sm font-medium text-foreground truncate">
+      {displayName(column)}
+    </span>
+    <Badge variant="secondary" className="flex-shrink-0">{visibleCards.length}</Badge>
   </div>
 
   {/* Card list + drop zone */}
@@ -389,19 +391,41 @@ A full-screen Appica UI `Alert` with `WarningTriangle` icon:
 
 From `@appica/icons-react`, used at `w-3.5 h-3.5` (card actions) or `w-4 h-4` (header, theme toggle):
 
+### UI chrome
+
 | Icon | Usage |
 |------|-------|
-| `Trash` | Delete card button |
-| `Plus` | Add card button (inside Input? or column header) |
+| `Trash` | Delete card/column button |
+| `Plus` | Add card button |
 | `SunHigh` | Light mode toggle |
 | `MoonStars` | Dark mode toggle |
 | `WarningTriangle` | Error/warning alerts |
-| `CheckCircle` | Success toast |
+| `CircleCheck` | Success toast / done columns |
 | `XmarkCircle` | Error toast |
 | `Spinner` | Loading states |
-| `Kanban` | Favicon / board icon |
+| `LayoutKanban` | Favicon / board icon / fallback column icon |
 
-No emoji in UI chrome. Emoji in column headers come from the TODO.md file, not the app.
+### Column icons (`columnIcon()` mapping)
+
+Column headers display Appica icons based on column name/ID keywords. Emoji from the TODO.md file is stripped via `displayName()` and replaced with the appropriate icon at render time.
+
+| Column pattern | Icon | Color |
+|----------------|------|-------|
+| `to do`, `todo` | `ClipboardCheck` | — |
+| `in progress`, `progress`, `doing`, `active` | `Clock` | — |
+| `done`, `complete`, `finished` | `CircleCheck` | green |
+| `reported`, `submitted` | `Bug` | red |
+| `triaging`, `triage` | `Search` | amber |
+| `fixing`, `fix` | `Wrench` | blue |
+| `resolved` | `CircleCheck` | green |
+| `backlog` | `Bookmark` | — |
+| `sprint` | `Rocket` | — |
+| `review`, `testing`, `qa` | `Eye` | blue |
+| `to read`, `want to read` | `Book2` | — |
+| `reading` | `BookFilled` | — |
+| `critical`, `urgent`, `blocker` | `AlertTriangle` | red |
+| `important`, `high`, `priority` | `AlertTriangle` | amber |
+| `polish`, `nice`, `low`, `later` | `Sparkles` | emerald |
 
 ---
 
@@ -449,6 +473,30 @@ module.exports = {
 ```
 
 Plugin errors are non-fatal — the parser continues if a plugin throws. Cards expose plugin-added fields (`dueDate`, `warning`) in the TypeScript `Card` interface for UI rendering.
+
+## Board templates
+
+`md-kanban init` scaffolds a TODO.md from preset templates. Templates are JSON files in `lib/templates/` with a schema of `{ name, title, description, columns: [{ name, cards: [{ title, description, tags, children, done }] }] }`. Column names are plain text — no emojis. The `columnIcon()` mapping in `Column.tsx` assigns the correct Appica icon at render time.
+
+### Available templates
+
+| Template | Columns | Use case |
+|----------|---------|----------|
+| `kanban` (default) | To Do, In Progress, Done | General project management |
+| `bug-tracker` | Reported, Triaging, Fixing, Resolved | Software bug tracking |
+| `sprint-planning` | Backlog, This Sprint, In Progress, Review, Done | Agile sprint management |
+| `reading-list` | To Read, Reading, Finished | Book/article tracking |
+
+### CLI
+
+```bash
+md-kanban init                          # Kanban template (default)
+md-kanban init --template bug-tracker   # Specific template
+md-kanban init --list                   # List all available templates
+md-kanban init --force                  # Overwrite existing TODO.md
+```
+
+When adding a new template column name, add the corresponding icon mapping to `columnIcon()` in `Column.tsx` so the column header renders the correct Appica icon.
 
 ## Tooltip pattern
 
