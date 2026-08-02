@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import type { SyncMessage } from '../types';
 
 /**
- * Manages a WebSocket connection to the kanban-md server.
+ * Manages a WebSocket connection to the md-kanban server.
  * Reconnects on disconnect with exponential backoff.
  *
  * Uses refs for callbacks to avoid re-creating the WebSocket when

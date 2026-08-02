@@ -1,11 +1,11 @@
-# kanban-md coding rules
+# md-kanban coding rules
 
-> This file governs the `tools/kanban-md/` directory. When this project is extracted
+> This file governs the `tools/md-kanban/` directory. When this project is extracted
 > to its own repo, this becomes the root AGENTS.md.
 
 ## What belongs here
 
-- ✅ Rules, constraints, and conventions specific to kanban-md
+- ✅ Rules, constraints, and conventions specific to md-kanban
 - ✅ Stack decisions and architecture boundaries
 - ✅ Patterns to clone and anti-patterns to avoid
 - ✅ Testing requirements
@@ -30,7 +30,7 @@
 ## Directory roadmap
 
 ```
-kanban-md/
+md-kanban/
   server.js              # CLI entry — Express + WebSocket + chokidar (~200 lines)
   lib/
     parser.js            # TODO.md → BoardState (with sub-task nesting)

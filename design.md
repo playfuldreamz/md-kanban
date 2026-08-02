@@ -1,4 +1,4 @@
-# kanban-md — Design System
+# md-kanban — Design System
 
 > Built on [Appica UI](https://appica.dev/ui/docs/react/installation). All components, tokens, and
 > patterns reference the Appica design system. See [llms.txt](https://appica.dev/llms.txt) and
@@ -31,7 +31,7 @@ Appica UI uses **role-based tokens**, not hue names. Every color is a CSS variab
 (`--foreground`, `--primary`, etc.) with a Tailwind utility (`text-foreground`,
 `bg-primary`). The palette ships with light and dark themes — we use the defaults.
 
-### Token usage in kanban-md
+### Token usage in md-kanban
 
 | Token | Where | Why |
 |-------|-------|-----|
@@ -385,7 +385,7 @@ Our additional responsibilities:
 
 ## Plugin system
 
-Plugins hook into the parser/writer pipeline via `parseCard()` and `serializeCard()` callbacks. Configure in the preamble with `@plugins name1, name2`. Built-in plugins live in `lib/builtin/`; user plugins in `~/kanban-md/plugins/` or `.kanban/plugins/`.
+Plugins hook into the parser/writer pipeline via `parseCard()` and `serializeCard()` callbacks. Configure in the preamble with `@plugins name1, name2`. Built-in plugins live in `lib/builtin/`; user plugins in `~/md-kanban/plugins/` or `.kanban/plugins/`.
 
 ```js
 // lib/builtin/my-plugin.js

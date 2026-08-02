@@ -2,6 +2,29 @@
 
 ## [Session] — 2026-07-31
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-31T02-05-13-371Z_019fb5eb-211b-70b2-8127-e90dbd66ced9.jsonl -->
+- feat: Export + keyboard shortcuts + unified preamble
+  
+  Export (GET /api/board/export):
+  - JSON/CSV/HTML formats with Content-Disposition attachment
+  - Static HTML renderer (lib/export-html.js) with inline CSS
+  - Download dropdown in header with blob URL approach
+  - 4 server tests + README docs
+  
+  Keyboard shortcuts (vim-style):
+  - j/k: navigate all cards/sub-tasks with auto-expand + ring highlight
+  - Enter/e: edit focused card; d: delete; Space: toggle
+  - p: pin; c: add sub-task below focused card; Esc: clear focus
+  - Caps Lock support; modal guard prevents conflicts
+  - Scroll-into-view + virtual list awareness
+  - 10 automated tests (keyboard-nav.test.ts)
+  
+  Unified preamble:
+  - Single canonical FORMAT_GUIDE covering all 12 feature areas
+  - Both server-utils.js and TODO.md use identical preamble
+  - Parser regexes made whitespace-tolerant for pinned/created dates
+  - Auto-correct behavior documented
+  
+  Also: due-dates 📅 syntax, Due Soon CommandPalette filter, overdue pulse animation
 
 - feat: due-dates — 📅 emoji syntax, Due Soon filter, overdue pulse animation
   

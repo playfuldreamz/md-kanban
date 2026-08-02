@@ -1,11 +1,11 @@
-# kanban-md — Architecture Specification
+# md-kanban — Architecture Specification
 
 ## Overview
 
 **kanban-md** is a lightweight CLI tool that renders any `TODO.md` as an interactive Kanban board in the browser. Columns map to `##` markdown sections; cards map to `- [ ]` / `- [x]` list items. Edits in the browser write back to the file. File changes (git pull, external editor) push to the browser via WebSocket. The file is always the source of truth — closing the tab loses nothing.
 
 **Install footprint**: ~2MB (chokidar + express + ws + pre-built React app).  
-**Runtime**: `npx kanban-md` in any project with a `TODO.md`.  
+**Runtime**: `npx md-kanban` in any project with a `TODO.md`.  
 **Frontend**: Appica UI components on React 19 + Tailwind CSS v4, built with Vite and shipped as static assets inside the package.
 
 ---
@@ -37,7 +37,7 @@ kanban-md bridges the gap: the file stays a plain Markdown file (git-friendly, e
 ```
 ┌──────────────────────────────────────────────────┐
 │  Terminal                                         │
-│  $ npx kanban-md                                  │
+│  $ npx md-kanban                                  │
 │  → Reads ./TODO.md                                │
 │  → Spins up Express + WebSocket on :3456          │
 │  → Opens browser                                  │
@@ -224,7 +224,7 @@ Add `@plugins` to the preamble to enable extensions. Ships with two built-in plu
 -->
 ```
 
-Custom plugins can be placed in `~/kanban-md/plugins/` or `<project>/.kanban/plugins/`. Each plugin exports `{ name, parseCard(card, rawLine), serializeCard(card, line) }`.
+Custom plugins can be placed in `~/md-kanban/plugins/` or `<project>/.kanban/plugins/`. Each plugin exports `{ name, parseCard(card, rawLine), serializeCard(card, line) }`.
 
 ### Round-trip fidelity
 

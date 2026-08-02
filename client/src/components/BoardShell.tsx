@@ -142,7 +142,7 @@ export default function BoardShell(props: BoardShellProps) {
   useEffect(() => {
     if (loading || error) return;
     // First-run onboarding
-    if (!localStorage.getItem('kanban-md-onboarded')) {
+    if (!localStorage.getItem('md-kanban-onboarded')) {
       setShowOnboarding(true);
     }
 
@@ -310,7 +310,7 @@ export default function BoardShell(props: BoardShellProps) {
             <p className="font-medium">Failed to load board</p>
             <p className="text-sm text-foreground-muted mt-1">{error}</p>
             <p className="text-xs text-foreground-subtle mt-2">
-              Make sure the kanban-md server is running on port 3456.
+              Make sure the md-kanban server is running on port 3456.
             </p>
           </div>
         </Alert>
@@ -441,7 +441,7 @@ export default function BoardShell(props: BoardShellProps) {
               <p className="mt-2">Drag cards between columns. Type <code className="text-[11px] bg-background-muted rounded px-1">#tags</code> in descriptions.</p>
             </div>
             <button
-              onClick={() => { setShowOnboarding(false); localStorage.setItem('kanban-md-onboarded', '1'); }}
+              onClick={() => { setShowOnboarding(false); localStorage.setItem('md-kanban-onboarded', '1'); }}
               className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-strong transition-colors"
             >
               Got it

@@ -13,7 +13,7 @@ async function main() {
     '# Test Project\n\n## Tasks\n- [ ] **One** — First\n- [x] **Two** — Done\n', 'utf-8');
 
   // Install from tarball
-  const tarball = path.join(__dirname, '..', 'kanban-md-0.1.0.tgz');
+  const tarball = path.join(__dirname, '..', 'md-kanban-0.1.0.tgz');
   execSync(`npm install "${tarball}"`, { cwd: tmpDir, stdio: 'pipe' });
   console.log('✅ Installed from tarball');
 
@@ -59,7 +59,7 @@ async function main() {
     if (!updated.includes('From E2E')) throw new Error('File not updated');
     console.log('✅ File updated');
 
-    console.log('\n🎉 E2E test PASSED — kanban-md works from npm pack');
+    console.log('\n🎉 E2E test PASSED — md-kanban works from npm pack');
   } catch (e) {
     console.error('❌', e.message);
     process.exitCode = 1;

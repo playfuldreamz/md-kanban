@@ -1,4 +1,4 @@
-# kanban-md — Implementation Plan
+# md-kanban — Implementation Plan
 
 ## Phase Overview
 
@@ -186,7 +186,7 @@ Drop saves to file correctly.
 
 ## Phase 6 — CLI Packaging
 
-**Goal**: `npx kanban-md` works end-to-end in any project.
+**Goal**: `npx md-kanban` works end-to-end in any project.
 
 ### Files
 - `package.json` (root) — bin, scripts, files
@@ -196,7 +196,7 @@ Drop saves to file correctly.
 
 ### Checklist
 
-- [x] `package.json` `"bin": { "kanban-md": "./server.js" }`
+- [x] `package.json` `"bin": { "md-kanban": "./server.js" }`
 - [x] `package.json` `"files": ["server.js", "lib/parser.js", "lib/writer.js", "client/dist/"]`
 - [x] Build script: `cd client && npm run build` → produces `client/dist/`
 - [x] Server serves `client/dist/` as static (with SPA fallback)
@@ -208,13 +208,13 @@ Drop saves to file correctly.
 
 ### Done signal
 ```bash
-$ npx kanban-md --help
-# Usage: kanban-md [--file <path>] [--port <n>] [--no-open]
+$ npx md-kanban --help
+# Usage: md-kanban [--file <path>] [--port <n>] [--no-open]
 #
 # Opens a Kanban board for your TODO.md in the browser.
 # Columns are ## sections, cards are - [ ] items.
 
-$ npx kanban-md
+$ npx md-kanban
 # Server on http://localhost:3456
 # Browser opens with board
 ```
@@ -253,7 +253,7 @@ $ npm test
 # All suites pass
 
 # Manual test:
-$ npx kanban-md
+$ npx md-kanban
 # Board loads, all interactions work, keyboard navigable, screen reader friendly
 ```
 
@@ -262,11 +262,11 @@ $ npx kanban-md
 ## Final Checklist
 
 - [x] All 7 phases complete (72 tests, all green)
-- [x] `npx kanban-md` works from npm (verified via `scripts/e2e-test.js`)
+- [x] `npx md-kanban` works from npm (verified via `scripts/e2e-test.js`)
 - [x] Tested on Windows; macOS + Linux pending
 - [x] `design.md` matches implementation (Appica UI tokens, components, layout)
 - [x] `AGENTS.md` reflects project conventions
-- [x] Zero dependencies on NoteAPP — `tools/kanban-md/` is fully self-contained
+- [x] Zero dependencies on NoteAPP — `tools/md-kanban/` is fully self-contained
 - [x] Frontend + backend tests pass (`npm test`, `npm run test:server`, `cd client && npx vitest run`)
 - [x] Production build succeeds (`npm run build`)
 - [ ] Extract to own repo (`github.com/user/kanban-md`) with `git init`, initial commit, push

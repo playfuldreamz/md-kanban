@@ -114,15 +114,15 @@
   • This comment block is invisible to the board
 -->
 
-# kanban-md — Roadmap
+# md-kanban — Roadmap
 
 ## To Do
-- [ ] **Board templates** — kanban-md init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 3-4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. #polish
+- [ ] **Board templates** — md-kanban init --template bug-tracker scaffolds a TODO.md with preset columns + example cards. Ship 3-4 templates: Kanban (default), Bug Tracker, Sprint Planning, Reading List. #polish
   - [ ] **Template format** — Define a JSON template schema: `{ name, description, columns: [{ name, emoji, cards: [{ title, description, tags, children }] }] }`. Templates live in `lib/templates/` as `.json` files.
   - [ ] **Kanban template** — Default 3-column board: "📋 To Do", "🚧 In Progress", "✅ Done" with 2-3 example cards each demonstrating sub-tasks, tags, and due dates.
   - [ ] **Bug Tracker template** — Columns: "🐛 Reported", "🔍 Triaging", "🔧 Fixing", "✅ Resolved". Example cards with #bug tag, reproduction steps in description, severity labels.
-  - [ ] **CLI integration** — `kanban-md init --template <name>` writes the template to `./TODO.md`. If file exists, prompt to overwrite (or use `--force`). `kanban-md init --list` prints available templates.
-  - [ ] **HelpDialog** — Add "Templates" section showing `kanban-md init --template` usage + available template names
+  - [ ] **CLI integration** — `md-kanban init --template <name>` writes the template to `./TODO.md`. If file exists, prompt to overwrite (or use `--force`). `md-kanban init --list` prints available templates.
+  - [ ] **HelpDialog** — Add "Templates" section showing `md-kanban init --template` usage + available template names
   - [ ] **Tests** — 3 cases: init with each template verifies output structure, --list output, overwrite prompt behavior
 - [ ] **Column WIP limits** — Per-column Work-In-Progress limits (e.g. "In Progress" max 5). Column header turns amber when exceeded. Configured via @wip block in preamble. #polish
   - [ ] **Preamble parser** — Add `parseWipLimits()` to parser.js: reads `@wip {"in-progress":5,"review":3}` from preamble HTML comment. Stores as `column.wipLimit` on matching columns.
@@ -143,11 +143,11 @@
   - [ ] **Keyboard tests** — (1) `?` opens help dialog, (2) `Cmd+K` opens command palette, (3) `n` focuses first AddCardForm input, (4) `Ctrl+Z` undoes last action, (5) `Ctrl+Shift+Z` redoes.
   - [ ] **Cross-browser** — Run on Chromium + Firefox + WebKit. One smoke test each (board renders, card drag works).
   - [ ] **CI integration** — Add `npm run test:e2e` script. Document in README.md testing section.
-- [ ] **Git integration (opt-in)** — --git flag that auto-commits TODO.md changes with meaningful messages (kanban-md: moved "Fix login" → In Progress). Respects user's git config. Off by default. #polish
+- [ ] **Git integration (opt-in)** — --git flag that auto-commits TODO.md changes with meaningful messages (md-kanban: moved "Fix login" → In Progress). Respects user's git config. Off by default. #polish
   - [ ] **Git detection** — On server start, check if TODO.md is inside a git repo (`git rev-parse --show-toplevel`). Store `gitRoot` in server state. If not in a repo, --git flag prints warning and proceeds without git.
   - [ ] **Commit message builder** — Map each API action to a human-readable message: CARD_ADD → `added "Task title" to Column Name`, CARD_MOVE → `moved "Task title" → Column Name`, CARD_EDIT → `updated "Task title"`, CARD_DELETE → `removed "Task title"`, CARD_TOGGLE → `marked "Task title" as done/undone`. Truncate titles over 60 chars.
-  - [ ] **Debounced commits** — Batch rapid changes (e.g., drag + undo + redo within 2 seconds) into a single commit. Use a 2-second debounce timer after the last mutation. Commit message lists all actions: `kanban-md: moved "X" → Done, added "Y" to To Do`.
-  - [ ] **CLI flag** — `--git` enables auto-commit. `--git-message-prefix "custom:"` overrides default "kanban-md:" prefix. Respect `user.name` and `user.email` from git config — never override.
+  - [ ] **Debounced commits** — Batch rapid changes (e.g., drag + undo + redo within 2 seconds) into a single commit. Use a 2-second debounce timer after the last mutation. Commit message lists all actions: `md-kanban: moved "X" → Done, added "Y" to To Do`.
+  - [ ] **CLI flag** — `--git` enables auto-commit. `--git-message-prefix "custom:"` overrides default "md-kanban:" prefix. Respect `user.name` and `user.email` from git config — never override.
   - [ ] **Error handling** — If git commit fails (merge conflict, detached HEAD, permission), show toast but never block the mutation. The file write still succeeds; only the commit is skipped. Log error to server console.
   - [ ] **Tests** — 4 cases: commit message format for each action type, debounce batches multiple changes, --git in non-repo prints warning, failed commit doesn't block file write
   - [ ] **HelpDialog + README** — Document --git flag, message format, debounce behavior
@@ -260,12 +260,12 @@
   - [x] **`?` help modal** — keyboard shortcut reference + feature overview (search, undo/redo, tags, sub-tasks, drag, create date). Press `?` to open.
   - [x] **Empty-state tips** — contextual hints when columns are empty or board has no cards ("Add your first task below", "Drag cards here", "Press Cmd+K to search")
   - [x] **First-run overlay** — on first visit (localStorage flag), show a quick guided tour pointing at header buttons, search, undo, theme toggle, etc.
-- [x] **Plugin system for parser extensions** — Hook-based middleware at parse/serialize points. Configured via `@plugins` block in preamble. Ships with due-dates and warning-cards plugins. Users can drop `.js` files in `~/kanban-md/plugins/`. #polish
+- [x] **Plugin system for parser extensions** — Hook-based middleware at parse/serialize points. Configured via `@plugins` block in preamble. Ships with due-dates and warning-cards plugins. Users can drop `.js` files in `~/md-kanban/plugins/`. #polish
   - [x] **Plugin API** — `lib/plugin-runner.js`: loads named plugins from config, calls `parseCard()` and `serializeCard()` hooks per card
   - [ ] **Preamble config** — parser reads `@plugins due-dates, warning-cards` from HTML comment block
   - [x] **due-dates plugin** — extracts `due:YYYY-MM-DD` from descriptions → `card.dueDate`, date picker in EditCardDialog, colored badge in KanbanCard
   - [ ] **warning-cards plugin** — recognizes `- [!] **Title**` syntax → `card.warning = true`, amber left border, warning toggle in EditCardDialog
-  - [x] **User plugin dir** — autoload `.js` files from `<project>/.kanban/plugins/` or `~/kanban-md/plugins/`
+  - [x] **User plugin dir** — autoload `.js` files from `<project>/.kanban/plugins/` or `~/md-kanban/plugins/`
   - [x] **KanbanCard styling** — warning cards get amber left border, overdue cards get red/amber/blue badge
   - [x] **Docs update** — HelpDialog, README, design.md, FORMAT_GUIDE updated with plugin docs and new syntax
 - [x] **Demo: warning card** — Verify - [!] syntax renders amber left border. This card uses - [!] syntax. #polish
