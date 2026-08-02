@@ -425,6 +425,7 @@ export function useBoard() {
     canRedo,
     files,
     currentFile,
+    apiBase,
     switchFile,
   };
 }

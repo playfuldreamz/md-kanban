@@ -22,6 +22,14 @@ interface HelpDialogProps {
 }
 
 const SHORTCUTS = (mod: string) => [
+  { keys: ['J'], desc: 'Next card', icon: null },
+  { keys: ['K'], desc: 'Previous card', icon: null },
+  { keys: ['Enter'], desc: 'Edit focused card', icon: null },
+  { keys: ['Space'], desc: 'Toggle done/undone', icon: null },
+  { keys: ['D'], desc: 'Delete focused card', icon: null },
+  { keys: ['P'], desc: 'Pin/unpin', icon: null },
+  { keys: ['C'], desc: 'Add task in column', icon: null },
+  { keys: ['Esc'], desc: 'Clear focus', icon: null },
   { keys: [mod, 'K'], desc: 'Search all tasks', icon: Search },
   { keys: [mod, 'Z'], desc: 'Undo last action', icon: ArrowBackUp },
   { keys: [mod, '⇧', 'Z'], desc: 'Redo', icon: ArrowForwardUp },

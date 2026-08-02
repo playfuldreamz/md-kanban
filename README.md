@@ -298,6 +298,14 @@ Remove a card entirely.
 
 **Response 200:** `{ "ok": true }`
 
+### `GET /api/board/export`
+Export the board in one of three formats. Accepts `?format=json|csv|html` and `?file=`.
+
+- **`?format=json`** — Full BoardState as JSON. Content-Disposition: attachment.
+- **`?format=csv`** — Flattened CSV with columns: `column, parent_title, title, description, done, due_date, assignees, tags, created_at`. Sub-tasks appear as separate rows with the parent title filled. RFC 4180 compliant.
+- **`?format=html`** — Self-contained static HTML page with inline CSS. No JavaScript. Light theme. Columns and cards rendered as styled divs with checkbox state, due date badges, tag badges, and assignee initials.
+- **Invalid format** returns `400 { "error": "..." }`.
+
 ### WebSocket `ws://127.0.0.1:3456`
 Server pushes `{ type: "sync", board: BoardState }` on every file change or API mutation. Client connects on page load and reconnects on disconnect. No client→server messages in v1.
 

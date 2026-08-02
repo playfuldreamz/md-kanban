@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@appica/ui-react/button';
 import { Checkbox } from '@appica/ui-react/checkbox';
 import { ChevronRight, Plus, X, Pencil } from '@appica/icons-react';
@@ -23,6 +23,7 @@ export interface SubTaskSectionProps {
   onEditSubTask?: (parentId: string, childId: string, title: string, description: string) => void;
   onDeleteSubTask?: (parentId: string, childId: string) => void;
   depth: number;
+  focusedCardId?: string | null;
 }
 
 interface SubTaskItemProps {
@@ -34,19 +35,33 @@ interface SubTaskItemProps {
   onAddSubTask?: (parentId: string, title: string, description?: string) => void;
   onEditSubTask?: (parentId: string, childId: string, title: string, description: string) => void;
   onDeleteSubTask?: (parentId: string, childId: string) => void;
+  focusedCardId?: string | null;
 }
 
 // ─── Components ─────────────────────────────────────────────────────────────
 
 export function SubTaskSection({
   parentId, childrenCards, open, onToggleOpen,
-  onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, depth,
+  onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, depth, focusedCardId,
 }: SubTaskSectionProps) {
   const hasChildren = childrenCards && childrenCards.length > 0;
   const doneCount = hasChildren ? childrenCards!.filter(c => c.done).length : 0;
   const total = hasChildren ? childrenCards!.length : 0;
   const allDone = hasChildren && doneCount === total;
   const canNest = depth < MAX_VISUAL_DEPTH;
+
+  // Auto-expand when keyboard focus enters a child
+  useEffect(() => {
+    if (!focusedCardId || !childrenCards) return;
+    const check = (cards: typeof childrenCards) => {
+      for (const card of cards) {
+        if (card.id === focusedCardId) return true;
+        if (card.children && check(card.children)) return true;
+      }
+      return false;
+    };
+    if (check(childrenCards)) onToggleOpen(true);
+  }, [focusedCardId, childrenCards]);
 
   if (!hasChildren && !onAddSubTask) return null;
 
@@ -74,6 +89,7 @@ export function SubTaskSection({
               depth={depth + 1} canNest={canNest}
               onToggleSubTask={onToggleSubTask} onAddSubTask={onAddSubTask}
               onEditSubTask={onEditSubTask} onDeleteSubTask={onDeleteSubTask}
+            focusedCardId={focusedCardId}
             />
           ))}
         </div>
@@ -87,8 +103,9 @@ export function SubTaskSection({
 
 function SubTaskItem({
   child, parentId, depth, canNest,
-  onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask,
+  onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, focusedCardId,
 }: SubTaskItemProps) {
+  const isFocused = child.id === focusedCardId;
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const hasKids = child.children && child.children.length > 0;
@@ -98,8 +115,8 @@ function SubTaskItem({
   const depthColor = depth >= 3 ? 'text-foreground-subtle' : depth >= 2 ? 'text-foreground-muted' : 'text-foreground';
 
   return (
-    <div>
-      <div className="group/child flex items-center gap-1.5 py-0.5" style={{ paddingLeft: `${depth * 4}px` }}>
+    <div data-card-id={child.id}>
+      <div data-card-focused={isFocused ? "true" : undefined} className={`group/child flex items-center gap-1.5 py-0.5 ${isFocused ? "ring-2 ring-primary ring-offset-1 rounded" : ""}`} style={{ paddingLeft: `${depth * 4}px` }}>
         {hasKids && canNest ? (
           <button onClick={() => setOpen(!open)} className="flex items-center gap-0.5 flex-shrink-0">
             <ChevronRight className={`w-2.5 h-2.5 text-foreground-muted transition-transform ${open ? 'rotate-90' : ''}`} />
@@ -151,6 +168,7 @@ function SubTaskItem({
             open={open} onToggleOpen={setOpen}
             onToggleSubTask={onToggleSubTask} onAddSubTask={onAddSubTask}
             onEditSubTask={onEditSubTask} onDeleteSubTask={onDeleteSubTask}
+            focusedCardId={focusedCardId}
             depth={depth + 1}
           />
         </div>
@@ -161,6 +179,7 @@ function SubTaskItem({
               depth={depth + 1} canNest={false}
               onToggleSubTask={onToggleSubTask} onAddSubTask={undefined}
               onEditSubTask={onEditSubTask} onDeleteSubTask={onDeleteSubTask}
+            focusedCardId={focusedCardId}
             />
           ))}
         </div>
@@ -190,7 +209,7 @@ export function AddSubTaskInline({
 
   if (!adding) {
     return (
-      <button onClick={() => { setAdding(true); setTimeout(() => inputRef.current?.focus(), 0); }}
+      <button data-add-subtask="true" onClick={() => { setAdding(true); setTimeout(() => inputRef.current?.focus(), 0); }}
         className="flex items-center gap-1 mt-1 text-xs text-foreground-subtle hover:text-foreground transition-colors">
         <Plus className="w-3 h-3" /> Add sub-task
       </button>

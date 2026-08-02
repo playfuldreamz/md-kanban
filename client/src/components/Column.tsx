@@ -61,12 +61,18 @@ interface ColumnViewProps {
   dragColumnId: string | null;
   onDragStart: (cardId: string, columnId: string) => void;
   onDragEnd: () => void;
+  focusedCardId: string | null;
+  editDialogCardId: string | null;
+  deleteDialogCardId: string | null;
+  onSetEditDialogCardId: (id: string | null) => void;
+  onSetDeleteDialogCardId: (id: string | null) => void;
 }
 
 export default function ColumnView({
   column, showCompleted, priorities, onToggle, onDelete, onAdd, onEdit,
   onMove, onDeleteColumn, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask,
   togglePin, boardAssignees, dragCardId, dragColumnId, onDragStart, onDragEnd,
+  focusedCardId, editDialogCardId, deleteDialogCardId, onSetEditDialogCardId, onSetDeleteDialogCardId,
 }: ColumnViewProps) {
   const [droppedCardId, setDroppedCardId] = useState<string | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<{ index: number; y: number } | null>(null);
@@ -170,6 +176,7 @@ export default function ColumnView({
 
   return (
     <div
+      data-column-id={column.id}
       className={`relative flex-1 min-w-[288px] max-w-[36rem] flex-shrink-0 flex flex-col max-h-full rounded-xl border shadow-sm transition-all duration-200 ${
         isDragOver && !isSource ? 'border-primary bg-primary-subtle/10 shadow-lg scale-[1.03]' : 
         isSource ? 'border-border-muted opacity-90' : 'border-border bg-background-subtle'
@@ -226,6 +233,12 @@ export default function ColumnView({
           renderItem={(card) => (
             <div className="pb-1.5">
               <KanbanCard
+                isFocused={card.id === focusedCardId}
+                focusedCardId={focusedCardId}
+                editDialogOpen={card.id === editDialogCardId}
+                deleteDialogOpen={card.id === deleteDialogCardId}
+                onEditDialogClose={() => onSetEditDialogCardId(null)}
+                onDeleteDialogClose={() => onSetDeleteDialogCardId(null)}
                 card={card}
                 columnName={column.name}
                 priorities={priorities}

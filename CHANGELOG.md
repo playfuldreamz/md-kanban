@@ -1,5 +1,18 @@
 # Changelog
 
+## [Session] — 2026-07-31
+<!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-31T02-05-13-371Z_019fb5eb-211b-70b2-8127-e90dbd66ced9.jsonl -->
+
+- feat: due-dates — 📅 emoji syntax, Due Soon filter, overdue pulse animation
+  
+  - Extended due-dates plugin regex to support 📅 YYYY-MM-DD alt format
+  - Added Due Soon toggle chip to CommandPalette (filters to cards due within 7 days)
+  - Added overdue-pulse CSS animation for past-due badges
+  - Created isDueOverdue() helper in card-utils
+  - Updated HelpDialog with Due Soon feature row
+  - 4 new plugin tests (due: syntax, 📅 with/without space, no date)
+  - Fleshed out all 12 TODO task subtasks with detailed implementation plans
+
 ## [Session] — 2026-07-29
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-29T18-26-22-147Z_019faf20-ad01-7d56-b01f-00e3388c0bf4.jsonl -->
 - feat: drop card animation, auto-scroll, drop line polish

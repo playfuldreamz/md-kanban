@@ -34,13 +34,23 @@ interface KanbanCardProps {
   onTogglePin?: () => void;
   onDragStart?: () => void;
   onDragEnd?: () => void;
+  isFocused?: boolean;
+  focusedCardId?: string | null;
+  editDialogOpen?: boolean;
+  deleteDialogOpen?: boolean;
+  onEditDialogClose?: () => void;
+  onDeleteDialogClose?: () => void;
 }
 
-export default function KanbanCard({ card, isDragging, isJustDropped, columnName, priorities, onToggle, onDelete, onEdit, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, boardAssignees, onTogglePin, onDragStart, onDragEnd }: KanbanCardProps) {
+export default function KanbanCard({ card, isDragging, isJustDropped, columnName, priorities, onToggle, onDelete, onEdit, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask, boardAssignees, onTogglePin, onDragStart, onDragEnd, isFocused, focusedCardId, editDialogOpen: extEditOpen, deleteDialogOpen: extDeleteOpen, onEditDialogClose, onDeleteDialogClose }: KanbanCardProps) {
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(card.title);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [localDeleteOpen, setLocalDeleteOpen] = useState(false);
+  const [localEditDialogOpen, setLocalEditDialogOpen] = useState(false);
+  const deleteOpen = extDeleteOpen === true ? true : localDeleteOpen;
+  const editDialogOpen = extEditOpen === true ? true : localEditDialogOpen;
+  const setDeleteOpen = (v: boolean) => { setLocalDeleteOpen(v); if (!v && onDeleteDialogClose) onDeleteDialogClose(); };
+  const setEditDialogOpenVal = (v: boolean) => { setLocalEditDialogOpen(v); if (!v && onEditDialogClose) onEditDialogClose(); };
   const [childrenOpen, setChildrenOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const propsPriorities = priorities;
@@ -81,9 +91,11 @@ export default function KanbanCard({ card, isDragging, isJustDropped, columnName
           ${isDragging ? 'opacity-50 scale-95 shadow-lg rotate-[0.5deg]' : ''}
           ${isJustDropped ? 'ring-2 ring-emerald-400 scale-[1.02] transition-all' : ''}
           ${!editing && onDragStart ? 'cursor-grab active:cursor-grabbing hover:shadow-md' : ''}
+          ${isFocused ? "ring-2 ring-primary ring-offset-1" : ""}
           transition-all duration-150
         `}
         data-card-id={card.id}
+        data-card-focused={isFocused ? "true" : undefined}
         style={isJustDropped ? { animation: 'drop-pulse 2s ease-out' } : undefined}
         ref={(el) => {
           if (el && isJustDropped) {
@@ -179,7 +191,7 @@ export default function KanbanCard({ card, isDragging, isJustDropped, columnName
             size="icon-sm"
             aria-label={`Edit ${card.title}`}
             className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 -mr-1 -mt-0.5"
-            onClick={(e) => { e.stopPropagation(); setEditDialogOpen(true); }}
+            onClick={(e) => { e.stopPropagation(); setEditDialogOpenVal(true); }}
           >
             <Pencil className="w-3.5 h-3.5" />
           </Button>
@@ -196,6 +208,7 @@ export default function KanbanCard({ card, isDragging, isJustDropped, columnName
 
         {/* Sub-tasks / children section */}
         <SubTaskSection
+          focusedCardId={focusedCardId}
           parentId={card.id}
           childrenCards={card.children}
           open={childrenOpen}
@@ -241,7 +254,7 @@ export default function KanbanCard({ card, isDragging, isJustDropped, columnName
         onSave={(newTitle, newDesc, newDueDate, newWarning) => {
           if (onEdit) onEdit(card.id, newTitle, newDesc, newDueDate, newWarning);
         }}
-        onClose={() => setEditDialogOpen(false)}
+        onClose={() => setEditDialogOpenVal(false)}
       />
 
     </>

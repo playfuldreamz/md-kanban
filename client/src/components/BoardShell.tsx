@@ -49,7 +49,95 @@ export default function BoardShell(props: BoardShellProps) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [focusedCardId, setFocusedCardId] = useState<string | null>(null);
+  const [editDialogCardId, setEditDialogCardId] = useState<string | null>(null);
+  const [deleteDialogCardId, setDeleteDialogCardId] = useState<string | null>(null);
+  const paletteOpenRef = { current: false };
+  const helpOpenRef = { current: false };
+  const editDialogRef = { current: false };
+  const deleteDialogRef = { current: false };
   const isMac = navigator.platform.includes('Mac');
+
+  
+
+  // Flatten all cards (top-level + sub-tasks) into board order for keyboard nav
+  const getFlatCards = (): { cardId: string; columnId: string }[] => {
+    const flat: { cardId: string; columnId: string }[] = [];
+    for (const col of board.columns) {
+      const walk = (cards: typeof col.cards) => {
+        for (const card of cards) {
+          flat.push({ cardId: card.id, columnId: col.id });
+          if (card.children) walk(card.children);
+        }
+      };
+      walk(col.cards);
+    }
+    return flat;
+  };
+
+  // Find parent card ID for a sub-task (null if top-level card)
+  const findParentId = (cardId: string): string | null => {
+    for (const col of board.columns) {
+      const search = (cards: typeof col.cards, parentId: string | null): string | null => {
+        for (const card of cards) {
+          if (card.id === cardId) return parentId;
+          if (card.children) {
+            const found = search(card.children, card.id);
+            if (found !== null) return found;
+          }
+        }
+        return null;
+      };
+      const result = search(col.cards, null);
+      if (result !== null) return result;
+    }
+    return null;
+  };
+
+  const navigateCard = (direction: string) => {
+    const flat = getFlatCards();
+    if (flat.length === 0) return;
+    let idx = focusedCardId ? flat.findIndex(f => f.cardId === focusedCardId) : -1;
+    if (idx === -1) {
+      setFocusedCardId(direction === "next" ? flat[0].cardId : flat[flat.length - 1].cardId);
+    } else {
+      const nextIdx = direction === "next"
+        ? (idx + 1) % flat.length
+        : (idx - 1 + flat.length) % flat.length;
+      setFocusedCardId(flat[nextIdx].cardId);
+    }
+  };
+
+  // Scroll to and highlight a card by ID
+  const scrollToCard = (cardId: string) => {
+    const el = document.querySelector(`[data-card-id="${cardId}"]`) as HTMLElement | null;
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      document.querySelectorAll("[data-card-focused]").forEach(e => {
+        e.removeAttribute("data-card-focused");
+        e.classList.remove("ring-2", "ring-primary", "ring-offset-1");
+      });
+      el.setAttribute("data-card-focused", "true");
+      el.classList.add("ring-2", "ring-primary", "ring-offset-1");
+    } else {
+      const flat = getFlatCards();
+      const fidx = flat.findIndex(f => f.cardId === cardId);
+      if (fidx !== -1) {
+        const colId = flat[fidx].columnId;
+        const colEl = document.querySelector(`[data-column-id="${colId}"]`) as HTMLElement | null;
+        if (colEl) {
+          const scrollArea = colEl.querySelector(".overflow-y-auto");
+          if (scrollArea) {
+            let colIdx = 0;
+            for (let i = fidx - 1; i >= 0; i--) {
+              if (flat[i].columnId === colId) colIdx++; else break;
+            }
+            scrollArea.scrollTop = colIdx * 80;
+          }
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     if (loading || error) return;
@@ -60,32 +148,128 @@ export default function BoardShell(props: BoardShellProps) {
 
   const handleKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if ((e.target as HTMLElement)?.contentEditable === 'true') return;
+      if ((e.target as HTMLElement)?.contentEditable === "true") return;
+
+      const modalOpen = paletteOpenRef.current || helpOpenRef.current || editDialogRef.current || deleteDialogRef.current;
+
+      // ── Navigation ──
+      if (!modalOpen && (e.key === 'j' || e.key === 'J') && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+        e.preventDefault(); navigateCard("next"); return;
+      }
+      if (!modalOpen && (e.key === 'k' || e.key === 'K') && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+        e.preventDefault(); navigateCard("prev"); return;
+      }
+
+      // ── Card actions ──
+      if (!modalOpen && focusedCardId) {
+        if (e.key === "Enter" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          const cardEl = document.querySelector(`[data-card-id="${focusedCardId}"]`);
+          if (cardEl) {
+            const editBtn = cardEl.querySelector('[aria-label^="Edit"]') as HTMLElement | null;
+            editBtn?.click();
+          }
+          return;
+        }
+        if (e.key === " " && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          const parentId = findParentId(focusedCardId);
+          if (parentId) toggleSubTask(parentId, focusedCardId);
+          else toggleCard(focusedCardId);
+          return;
+        }
+        if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          const cardEl = document.querySelector(`[data-card-id="${focusedCardId}"]`);
+          if (cardEl) {
+            const delBtn = cardEl.querySelector('[aria-label^="Delete"]') as HTMLElement | null;
+            delBtn?.click();
+          }
+          return;
+        }
+        if ((e.key === 'e' || e.key === 'E') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          const cardEl = document.querySelector(`[data-card-id="${focusedCardId}"]`);
+          if (cardEl) {
+            const editBtn = cardEl.querySelector('[aria-label^="Edit"]') as HTMLElement | null;
+            editBtn?.click();
+          }
+          return;
+        }
+        if ((e.key === 'p' || e.key === 'P') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          const parentId = findParentId(focusedCardId);
+          if (!parentId) togglePin(focusedCardId);
+          return;
+        }
+      }
+
+      // ── Create ──
+      if (!modalOpen && (e.key === 'c' || e.key === 'C') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        if (focusedCardId) {
+          const cardEl = document.querySelector(`[data-card-id="${focusedCardId}"]`) as HTMLElement | null;
+          if (cardEl) {
+            // Try adding a sub-task to the focused card first
+            const addSubBtn = cardEl.querySelector("[data-add-subtask]") as HTMLElement | null;
+            if (addSubBtn) {
+              addSubBtn.click();
+            } else {
+              // Fallback: add card to the column
+              const col = cardEl.closest("[data-column-id]") as HTMLElement | null;
+              if (col) {
+                const btn = col.querySelector("[data-add-card-trigger]") as HTMLElement | null;
+                btn?.click();
+              }
+            }
+          }
+        } else {
+          const btn = document.querySelector("[data-add-card-trigger]") as HTMLElement | null; btn?.click();
+        }
+        return;
+      }
+
+      // ── Escape ──
+      if (!modalOpen && e.key === "Escape" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        setFocusedCardId(null);
+        document.querySelectorAll("[data-card-focused]").forEach(el => {
+          el.removeAttribute("data-card-focused");
+          el.classList.remove("ring-2", "ring-primary", "ring-offset-1");
+        });
+        return;
+      }
+
+      // ── Global ──
       if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        const firstAddBtn = document.querySelector('[data-add-card-trigger]') as HTMLElement | null;
+        const firstAddBtn = document.querySelector("[data-add-card-trigger]") as HTMLElement | null;
         firstAddBtn?.click();
       }
       if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setPaletteOpen(true);
+        setPaletteOpen(true); paletteOpenRef.current = true;
       }
       if (e.key === '?' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
-        setHelpOpen(true);
+        setHelpOpen(true); helpOpenRef.current = true;
       }
       if (e.key === 'z' && (e.metaKey || e.ctrlKey) && !e.shiftKey) {
-        e.preventDefault();
-        doUndo();
+        e.preventDefault(); doUndo();
       }
       if ((e.key === 'z' && (e.metaKey || e.ctrlKey) && e.shiftKey) || (e.key === 'y' && (e.metaKey || e.ctrlKey))) {
-        e.preventDefault();
-        doRedo();
+        e.preventDefault(); doRedo();
       }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [loading, error]);
+  }, [loading, error, focusedCardId, toggleCard, togglePin, doUndo, doRedo]);
+
+  // Scroll to focused card when focus changes
+  useEffect(() => {
+    if (focusedCardId) {
+      requestAnimationFrame(() => scrollToCard(focusedCardId));
+    }
+  }, [focusedCardId]);
 
   const handlePaletteSelect = (columnId: string, cardId: string) => {
     // Scroll to the card and briefly highlight it
@@ -217,6 +401,11 @@ export default function BoardShell(props: BoardShellProps) {
           onDeleteSubTask={deleteSubTask}
           togglePin={togglePin}
           boardAssignees={board.assignees}
+          focusedCardId={focusedCardId}
+          editDialogCardId={editDialogCardId}
+          deleteDialogCardId={deleteDialogCardId}
+          onSetEditDialogCardId={setEditDialogCardId}
+          onSetDeleteDialogCardId={setDeleteDialogCardId}
           dragCardId={dragCardId}
           dragColumnId={dragColumnId}
           onDragStart={(cardId, columnId) => {

@@ -26,12 +26,18 @@ interface ColumnListProps {
   dragColumnId: string | null;
   onDragStart: (cardId: string, columnId: string) => void;
   onDragEnd: () => void;
+  focusedCardId: string | null;
+  editDialogCardId: string | null;
+  deleteDialogCardId: string | null;
+  onSetEditDialogCardId: (id: string | null) => void;
+  onSetDeleteDialogCardId: (id: string | null) => void;
 }
 
 export default function ColumnList({
   columns, showCompleted, priorities, onToggle, onDelete, onAdd, onEdit,
   onMove, onAddColumn, onDeleteColumn, onToggleSubTask, onAddSubTask, onEditSubTask, onDeleteSubTask,
   togglePin, boardAssignees, dragCardId, dragColumnId, onDragStart, onDragEnd,
+  focusedCardId, editDialogCardId, deleteDialogCardId, onSetEditDialogCardId, onSetDeleteDialogCardId,
 }: ColumnListProps) {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
@@ -75,6 +81,11 @@ export default function ColumnList({
             dragColumnId={dragColumnId}
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
+            focusedCardId={focusedCardId}
+            editDialogCardId={editDialogCardId}
+            deleteDialogCardId={deleteDialogCardId}
+            onSetEditDialogCardId={onSetEditDialogCardId}
+            onSetDeleteDialogCardId={onSetDeleteDialogCardId}
           />
         ))}
 
