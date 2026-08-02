@@ -1,6 +1,6 @@
 {
   "name": "md-kanban",
-  "version": "0.1.56",
+  "version": "0.2.0",
   "description": "Interactive Kanban board for your TODO.md — columns are ## sections, cards are - [ ] items.",
   "main": "server.js",
   "bin": {
@@ -13,6 +13,7 @@
     "lib/routes.js",
     "lib/server-utils.js",
     "lib/plugin-runner.js",
+    "lib/export-html.js",
     "lib/builtin/",
     "client/dist/"
   ],

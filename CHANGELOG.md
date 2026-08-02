@@ -2,6 +2,12 @@
 
 ## [Session] — 2026-07-31
 <!-- pi-session: C:\Users\obose\.pi\agent\sessions\--C--Users-obose-Documents-GitHub-kanban-md--\2026-07-31T02-05-13-371Z_019fb5eb-211b-70b2-8127-e90dbd66ced9.jsonl -->
+- chore: rename kanban-md → md-kanban across all files
+- chore: complete kanban-md → md-kanban rename audit
+  
+  - Updated all remaining references in AGENTS.md, PLAN.md, plugin-runner.js, server.test.js, e2e-test.js
+  - Plugin directory: ~/kanban-md/plugins/ → ~/md-kanban/plugins/
+  - Zero remaining 'kanban-md' references in source
 - feat: Export + keyboard shortcuts + unified preamble
   
   Export (GET /api/board/export):
