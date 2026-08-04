@@ -1,4 +1,5 @@
 node_modules/
 client/dist/
 client/node_modules/
+client/tsconfig.tsbuildinfo
 *.log
