@@ -24,6 +24,8 @@ jobs:
 
       - run: npm ci
 
+      - run: cd client && npm ci
+
       - run: npm test
         env:
           CI: true
