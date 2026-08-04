@@ -1,0 +1,45 @@
+name: Publish to npm
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  publish:
+    # GitHub Actions natively skips commits with [skip ci] in the message.
+    # This prevents the version-bump push from re-triggering this workflow.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # needed to push version bump + tag back
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+
+      - run: npm test
+        env:
+          CI: true
+
+      - run: npm run build
+
+      - name: Bump version + tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          npm version patch -m "chore: bump to %s [skip ci]"
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Push version bump + tag
+        run: git push --follow-tags

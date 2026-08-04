@@ -24,7 +24,7 @@
     "test": "node lib/parser.test.js && node lib/writer.test.js",
     "test:server": "node lib/server.test.js",
     "build": "cd client && npm run build",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && node scripts/prepublish-check.js"
   },
   "keywords": [
     "kanban",
